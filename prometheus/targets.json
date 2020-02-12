@@ -1,0 +1,10 @@
+[
+  {
+    "labels": {
+      "application": "node-exporter-duplicate"
+    },
+    "targets": [
+      "192.168.1.200:9100"
+    ]
+  }
+]

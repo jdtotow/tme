@@ -1,0 +1,18 @@
+message = {'request': 'define_qos','application': 'prometheusbeat','slo':'metric_rate','type':'>','queue': queue,'deployment':'tester','threshold':100,'n_field':9,'prediction':True}
+{
+    'application':{
+        'name':'prometheusbeat',
+        'deployment': 'prometheusbeat',
+        'replicas': 'tester'
+    },
+    'violation':{
+        'type': '>',
+        'slo': 'metric_rate',
+        'threshold': 200
+    },
+    'under_utilization':{
+        'type':'<',
+        'slo': 'metric_rate',
+        'threshold': 50
+    }
+}

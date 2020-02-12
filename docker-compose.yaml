@@ -1,0 +1,254 @@
+version: '2'
+services:
+  prometheus:
+    image: prom/prometheus
+    hostname : prometheus
+    restart: always
+    container_name: prometheus
+    networks:
+      - monitoring
+    ports:
+      - 9090:9090
+    volumes:
+      - "./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:z"
+      - "./prometheus/targets.json:/etc/prometheus/targets.json:z"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=52h'
+      - '--web.enable-lifecycle'
+
+  pushgateway:
+    image: prom/pushgateway
+    hostname: pushgateway
+    restart: always 
+    container_name: pushgateway
+    networks: 
+      - monitoring
+    ports:
+      - 9091:9091
+
+  prometheusbeat:
+    image: jdtotow/prometheusbeat
+    hostname: prometheusbeat
+    restart: always
+    container_name: prometheusbeat
+    networks:
+      - monitoring
+    ports:
+      - 55673:55673
+    environment:
+      - "PROMETHEUS_URL_API=http://prometheus:9090"
+      - "EXPORTER_URL=http://localhost:55673"
+      - "METRICS_SOURCE=manager,qos,prometheusbeat,qos_quantile,prometheus,prometheusbeat2,outapi,node_exporter,rabbitmq,pushgateway,exporter,bigdatastack-users-apps"
+      - "RABBITMQ_HOST=rabbitmq"
+      - "SLEEP=0.1"
+      - "COMPONENTNAME=prometheusbeat"
+      - "UPDATEMETRICSLISTNAMEPERIOD=30"
+      #- "HTTP_OUT_URL=http://logstash:8089"
+
+  prometheusbeat2:
+    image: jdtotow/prometheusbeat
+    hostname: prometheusbeat2
+    restart: always
+    container_name: prometheusbeat2
+    networks:
+      - monitoring
+    ports:
+      - 55679:55679
+    environment:
+      - "PROMETHEUS_URL_API=http://prometheus:9090"
+      - "EXPORTER_URL=http://localhost:55679"
+      - "METRICS_SOURCE=manager,qos,prometheusbeat,qos_quantile,prometheus,prometheusbeat2,outapi,node_exporter,rabbitmq,pushgateway,exporter,bigdatastack-users-apps"
+      - "RABBITMQ_HOST=rabbitmq"
+      - "SLEEP=0.1"
+      - "COMPONENTNAME=prometheusbeat-2"
+      - "UPDATEMETRICSLISTNAMEPERIOD=32"
+      #- "HTTP_OUT_URL=http://logstash:8089"
+      - "EXPORTERPORT=55679"
+      - "DEPLOYMENT=secondary"
+  
+  #exporter:
+  #  image: jdtotow/exporter 
+  #  container_name: exporter 
+  #  hostname: exporter 
+  #  restart: always
+  #  networks: 
+  #    - monitoring 
+  #  ports:
+  #    - 55671:55671 
+  outapi:
+    image: jdtotow/output:dci
+    container_name: outapi
+    hostname: outapi
+    restart: always
+    networks:
+      - monitoring
+    ports:
+      - 55670:55670
+    environment:
+      - "ELASTICSEARCHHOST=elasticsearch"
+      - "MONGODBHOST=mongodb"
+      - "PROMETHEUS_URL_API=http://prometheus:9090"
+      - "PROCESSINGDELAY=120"
+      - "DEFAULTEND=30"
+  rabbitmq-exporter:
+    image: kbudde/rabbitmq-exporter
+    container_name: rabbitmq-exporter
+    hostname: rabbitmq-exporter 
+    restart: always 
+    networks:
+      - monitoring 
+    ports:
+      - 9419:9419
+    environment:
+      - "RABBIT_URL=http://rabbitmq:15672"
+      - "RABBIT_USER=richardm"
+      - "RABBIT_PASSWORD=bigdatastack"
+  #elasticsearch:
+  #  image: docker.elastic.co/elasticsearch/elasticsearch:6.6.1
+  #  container_name: elasticsearch
+  #  hostname: elasticsearch
+  #  restart: always
+  #  networks:
+  #    - monitoring
+  #  ports:
+  #    - 9200:9200
+  #    - 9300:9300
+
+  #logstash:
+  #  image: docker.elastic.co/logstash/logstash:6.4.3
+  #  container_name: logstash
+  #  hostname: logstash
+  #  restart: always
+  #  networks:
+  #    - monitoring
+  #  environment:
+  #    - "ELASTICSEARCHHOST=elasticsearch"
+  #    - "LOGSTASHHOST=logstash"
+  #  volumes:
+  #    - "./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf"
+  #  ports:
+  #    - 8089:8089
+
+  qos:
+    image: jdtotow/qos
+    hostname: qos 
+    restart: always 
+    container_name: qos 
+    networks: 
+      - monitoring
+    ports:
+      - 55682:55682
+    environment: 
+      - "RABBITMQHOSTNAME=rabbitmq"
+      - "CONFIGFILEPATH=/config"
+      - "EXPORTERPORT=55682"
+      - "EXPORTER_URL=http://qos:55682" 
+  
+  pdp:
+    image: jdtotow/pdp
+    hostname: pdp
+    restart: always 
+    container_name: pdp 
+    networks: 
+      - monitoring
+    environment: 
+      - "RABBITMQHOSTNAME=rabbitmq"
+      - "CONFIGFILEPATH=/config"
+      - "EVALUATIONINTERVAL=600"
+  ml:
+    image: jdtotow/ml 
+    hostname: ml 
+    restart: always 
+    container_name: ml 
+    networks:
+      - monitoring
+    volumes: 
+      - "/home/jean-didier/Projects/bigdatastack/TME/ml/src/dataset:/dataset"
+    environment: 
+      - "RABBITMQHOST=rabbitmq"
+
+  recommender:
+    image: jdtotow/recommender 
+    hostname: recommender 
+    container_name: recommender
+    networks: 
+      - monitoring
+    restart: always 
+    environment: 
+      - "PUSHGATEWAY=pushgateway:9091"
+    ports:
+      - 7070:7070
+
+  manager:
+    image: jdtotow/manager
+    hostname: manager
+    restart: always
+    container_name: manager
+    networks:
+      - monitoring
+    ports:
+      - 55671:55671
+      - 55683:55683
+    environment:
+      - "MONGODB_HOST=mongodb"
+      - "RABBITMQHOST=rabbitmq"
+      - "URLEXPORTER=http://localhost:55671"
+      - "COMPONENTNAME=manager"
+      - "NTHREADSCONSUMER=5"
+      - "URLEXPORTERQOS=http://localhost:55683"
+
+  rabbitmq:
+    build: rabbitmq/.
+    hostname: rabbitmq
+    container_name: rabbitmq 
+    networks:
+      - monitoring
+    ports:
+      - 5672:5672
+      - 5671:5671
+      - 15672:15672
+
+  mongodb:
+    image: mongo
+    hostname: mongodb
+    container_name: mongodb
+    restart: always
+    environment:
+      - "MONGO_INITDB_ROOT_USERNAME=uprc"
+      - "MONGO_INITDB_ROOT_PASSWORD=bigdatastack"
+      - "MONGO_INITDB_DATABASE=TPME"
+    networks:
+      - monitoring
+    ports:
+      - 27017:27017
+  grafana:
+    image: grafana/grafana
+    hostname: grafana
+    container_name: grafana
+    restart: always
+    networks:
+      - monitoring
+    ports:
+      - 3000:3000
+  
+  slalite:
+    image: icuadrado/slalite:test
+    hostname: slalite 
+    container_name: slalite 
+    restart: always 
+    networks: 
+      - monitoring 
+    ports:
+      - 8090:8090 
+    environment: 
+      - "EXPORTER_URL=http://qos:55682"
+      - "SLA_CHECKPERIOD=20"
+
+networks:
+  monitoring:
+    driver: "bridge"
+
+

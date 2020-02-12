@@ -1,0 +1,32 @@
+{
+    "id": "a03",
+    "name": "provide-recomendation-service",
+    "state": "started",
+    "details":{
+        "id": "a03",
+        "type": "agreement",
+        "name": "provide-recomendation-service",
+        "provider": { "id": "mf2c", "name": "mF2C Platform" },
+        "client": { "id": "c02", "name": "A client" },
+        "creation": "2019-01-16T17:09:45Z",
+        "expiration": "2020-11-13T10:25:45Z",
+        "messages":1,
+        "frequency":60,
+        "guarantees": [
+            {
+                "name": "responseTime",
+                "constraint": "[responseTime] > 150",
+                "importance": [
+                        {
+                                "Name": "Mild",
+                                "Constraint": " > 150"
+                        },
+                        {
+                                "Name": "Serious",
+                                "Constraint": " > 200"
+                        }
+                ]
+            }
+        ]
+    }
+}
