@@ -2,7 +2,7 @@ global:
   scrape_interval: 15s
 scrape_configs:
 - job_name: prometheus
-  scrape_interval: 5s
+  scrape_interval: 30s
   static_configs:
   - targets:
     - localhost:9090
@@ -13,7 +13,7 @@ scrape_configs:
   - targets:
     - pushgateway:9091
 - job_name: grafana
-  scrape_interval: 10s
+  scrape_interval: 5s
   static_configs:
   - targets:
     - grafana:3000
@@ -27,43 +27,47 @@ scrape_configs:
   static_configs:
   - targets:
     - prometheusbeat:55673
-    
 - job_name: prometheusbeat2
   scrape_interval: 5s
   static_configs:
   - targets:
     - prometheusbeat2:55679
-
+- job_name: prometheusbeat3
+  scrape_interval: 5s
+  static_configs:
+  - targets:
+    - prometheusbeat3:55689
 - job_name: qos
   scrape_interval: 5s
   static_configs:
   - targets:
     - qos:55682
-
 - job_name: manager
-  scrape_interval: 5s
+  scrape_interval: 30s
   static_configs:
   - targets:
     - manager:55671
-- job_name: bigdatastack-users-apps
-  file_sd_configs:
-    - files:
-      - '/etc/prometheus/targets.json'
+- file_sd_configs:
+  - files:
+    - /etc/prometheus/targets.json
+  job_name: bigdatastack-users-apps
 - job_name: node_exporter
-  scrape_interval: 5s
+  scrape_interval: 30s
   static_configs:
   - targets:
-    - 192.168.59.214:9100
+    - 192.168.1.2:9100
 - job_name: rabbitmq
-  scrape_interval: 5s
+  scrape_interval: 30s
   static_configs:
   - targets:
     - rabbitmq-exporter:9419
 - job_name: qos_quantile
-  scrape_interval: 5s 
+  scrape_interval: 5s
   static_configs:
   - targets:
     - manager:55683
-
-
-
+- job_name: optimizer
+  scrape_interval: 5s
+  static_configs:
+  - targets:
+    - optimizer:55674

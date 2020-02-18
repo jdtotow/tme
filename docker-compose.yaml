@@ -41,12 +41,12 @@ services:
     environment:
       - "PROMETHEUS_URL_API=http://prometheus:9090"
       - "EXPORTER_URL=http://localhost:55673"
-      - "METRICS_SOURCE=manager,qos,prometheusbeat,qos_quantile,prometheus,prometheusbeat2,outapi,node_exporter,rabbitmq,pushgateway,exporter,bigdatastack-users-apps"
+      - "METRICS_SOURCE=manager,qos,prometheusbeat,optimizer,prometheus,prometheusbeat2,outapi,node_exporter,rabbitmq,pushgateway,exporter,bigdatastack-users-apps"
       - "RABBITMQ_HOST=rabbitmq"
       - "SLEEP=0.1"
       - "COMPONENTNAME=prometheusbeat"
       - "UPDATEMETRICSLISTNAMEPERIOD=30"
-      #- "HTTP_OUT_URL=http://logstash:8089"
+      - "HTTP_OUT_URL=http://optimizer:55674/beats"
 
   prometheusbeat2:
     image: jdtotow/prometheusbeat
@@ -60,12 +60,12 @@ services:
     environment:
       - "PROMETHEUS_URL_API=http://prometheus:9090"
       - "EXPORTER_URL=http://localhost:55679"
-      - "METRICS_SOURCE=manager,qos,prometheusbeat,qos_quantile,prometheus,prometheusbeat2,outapi,node_exporter,rabbitmq,pushgateway,exporter,bigdatastack-users-apps"
+      - "METRICS_SOURCE=manager,qos,optimizer,prometheusbeat,prometheus,prometheusbeat3,prometheusbeat2,outapi,node_exporter,rabbitmq,pushgateway,exporter,bigdatastack-users-apps"
       - "RABBITMQ_HOST=rabbitmq"
       - "SLEEP=0.1"
       - "COMPONENTNAME=prometheusbeat-2"
       - "UPDATEMETRICSLISTNAMEPERIOD=32"
-      #- "HTTP_OUT_URL=http://logstash:8089"
+      - "HTTP_OUT_URL=http://optimizer:55674/beats"
       - "EXPORTERPORT=55679"
       - "DEPLOYMENT=secondary"
   
@@ -157,7 +157,7 @@ services:
     environment: 
       - "RABBITMQHOSTNAME=rabbitmq"
       - "CONFIGFILEPATH=/config"
-      - "EVALUATIONINTERVAL=600"
+      - "EVALUATIONINTERVAL=60"
   ml:
     image: jdtotow/ml 
     hostname: ml 
@@ -210,7 +210,28 @@ services:
       - 5672:5672
       - 5671:5671
       - 15672:15672
-
+  
+  optimizer:
+    image: jdtotow/optimizer
+    hostname: optimizer
+    container_name: optimizer
+    restart: always
+    ports:
+      - 55674:55674
+    networks:
+      - monitoring
+    environment:
+      - "PROMETHEUSCONFIPATH=/config/prometheus.yml"
+      - "PROMETHEUSAPI=http://prometheus:9090"
+      - "HANDLINGINTERVAL=1"
+      - "MONGODBHOST=mongodb:27017"
+      - "MONGODBUSER=uprc"
+      - "MONGODBPASSWORD=bigdatastack"
+      - "MONGODBDBNAME=TPME"
+      - "LOGSTASHINPUTHTTP=http://logstash2:8089/"
+      - "LOWPERFORMANCETOLERANCE=75"
+    volumes:
+      - "./prometheus/prometheus.yml:/config/prometheus.yml:z"
   mongodb:
     image: mongo
     hostname: mongodb
@@ -233,19 +254,6 @@ services:
       - monitoring
     ports:
       - 3000:3000
-  
-  slalite:
-    image: icuadrado/slalite:test
-    hostname: slalite 
-    container_name: slalite 
-    restart: always 
-    networks: 
-      - monitoring 
-    ports:
-      - 8090:8090 
-    environment: 
-      - "EXPORTER_URL=http://qos:55682"
-      - "SLA_CHECKPERIOD=20"
 
 networks:
   monitoring:

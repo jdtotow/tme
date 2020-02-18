@@ -152,16 +152,19 @@ class PublisherOnce():
                 self.publish()
 
 class Application():
-    def __init__(self,name,slo):
+    def __init__(self,name,slo,violation):
         self.name = name 
         self.slo = slo 
         self.features = None 
+        self.violation = violation
     def getKey(self):
         return self.name+"-"+self.slo 
     def setFeatures(self,features):
         self.features = features
     def getFeatures(self):
         return self.features
+    def getViolation(self):
+        return self.violation
 
 class DatasetElement():
     def __init__(self,features):
@@ -169,7 +172,24 @@ class DatasetElement():
         self.list_values = {}
         self.existing_feature = []
         self.slo = None
-        self.time = None 
+        self.time = None
+        self.threshold = None 
+        self.threshold_type = None 
+    def setThreshold(self,threshold):
+        self.threshold = threshold
+    def setThresholdType(self,threshold_type):
+        self.threshold_type = threshold_type
+    def isViolation(self):
+        if self.threshold_type == ">":
+            if self.getValue(self.slo) > self.threshold:
+                return 1
+            else:
+                return 0 
+        else:
+            if self.getValue(self.slo) < self.threshold:
+                return 1
+            else:
+                return 0 
     def setTime(self,_time):
         self.time = _time  
     def setSLO(self,slo):
@@ -202,6 +222,8 @@ class DatasetElement():
         result = str(slo_value)+ ","
         #adding time column
         result = result + str(self.time) +","
+        #adding violation column
+        result = result + str(self.isViolation()) +","
         for feature in self.features:
             key = str(feature['metric'])
             _value = self.getValue(key)
@@ -221,9 +243,10 @@ class DatasetElement():
         
 
 class Basket():
-    def __init__(self, application_name,slo,features):
+    def __init__(self, application_name,slo,features,violation):
         self.application_name = application_name
         self.slo = slo 
+        self.violation = violation
         self.features = features #[{'application':'application','metric': slo}]
         self.structure_dataset = {}
         self.manager = None 
@@ -236,7 +259,7 @@ class Basket():
     def addTitleToFile(self):
         if os.stat("/dataset/"+self.application_name+"-"+self.slo+".csv").st_size > 0:
             return None 
-        line = self.slo+",time,"
+        line = self.slo+",time,violation,"
         for feature in self.features:
             line += feature['metric']+","
         self.file.write(line[:-1]+"\n") #removing the last ',' then write 
@@ -247,6 +270,10 @@ class Basket():
         return self.application_name
     def getSLO(self):
         return self.slo 
+    def getThreshold(self):
+        return self.violation['threshold']
+    def getThresholdType(self):
+        return self.violation['threshold_type']
     def getFeatures(self):
         return self.features
     def hasFeature(self,application,slo):
@@ -265,10 +292,12 @@ class Basket():
             element.setSLO(self.slo)
             element.setTime(key)
             element.addValue(slo,value)
+            element.setThreshold(self.getThreshold())
+            element.setThresholdType(self.getThresholdType())
             self.structure_dataset[key] = element
         if len(self.structure_dataset.keys()) >= self.size_to_write*1.5:
             self.writeDataToFile()
-        print("structure size <<"+str(len(self.structure_dataset.keys()))+">> for the slo <<"+slo+">>")
+        #print("structure size <<"+str(len(self.structure_dataset.keys()))+">> for the slo <<"+slo+">>")
     def closeDataset(self):
         self.file = open("/dataset/"+self.application_name+"-"+self.slo+".csv", "a+")
         previous_row = None
@@ -325,14 +354,14 @@ class DatasetMaker():
     def setPreviousConfig(self,config):
         self.current_config = config 
         for key, _json in self.current_config.iteritems():
-            self.addApplication(_json['application'],_json['slo'],_json['features']) 
+            self.addApplication(_json['application'],_json['slo'],_json['features'],_json['violation']) 
         print("ML config reloaded successfuly")
     def makeKey(self,application,slo):
         return application+"-"+slo 
-    def createBasket(self,application_name,slo,features):
+    def createBasket(self,application_name,slo,features,violation):
         basket = self.getBasket(application_name,slo)
         if basket == None:
-            basket = Basket(application_name,slo,features)
+            basket = Basket(application_name,slo,features,violation)
             basket.setManager(self.manager)
             self.basket_dict[application_name+"-"+slo] = basket 
             return True 
@@ -359,14 +388,14 @@ class DatasetMaker():
             key = application+"-"+slo 
             if not key in self.list_applications_slo_subscription:
                 self.sendSubscription(application,slo)
-    def addApplication(self,application,slo,features):
+    def addApplication(self,application,slo,features,violation):
         key = self.makeKey(application,slo)
         if not key in self.applications:
-            app = Application(application,slo)
+            app = Application(application,slo,violation)
             app.setFeatures(features)
             self.applications[key] = app 
             #self.config.setConfig(key,{'application': application,'slo': slo,'features': features})
-            self.createBasket(application,slo,features)
+            self.createBasket(application,slo,features,violation)
             print("Application <<"+application+">> with the slo <<"+slo+">> added")
             if not key in self.list_applications_slo_subscription:
                 self.sendSubscription(application,slo)
@@ -426,7 +455,7 @@ class Manager():
     def prepareDataset(self,_json):
         application = _json['data']['application']['name']
         slo = _json['data']['application']['slo']
-        self.dataset_maker.addApplication(application,slo,_json['data']['metrics'])
+        self.dataset_maker.addApplication(application,slo,_json['data']['metrics'],_json['data']['violation'])
     def handleSubscriptionData(self,_json):
         baskets = self.dataset_maker.getBasketByDataStream(_json['data']['labels']['application'],_json['data']['name'])
         if baskets != []:
