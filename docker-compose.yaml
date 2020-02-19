@@ -166,7 +166,7 @@ services:
     networks:
       - monitoring
     volumes: 
-      - "/home/jean-didier/Projects/bigdatastack/TME/ml/src/dataset:/dataset"
+      - "./ml/src/dataset:/dataset"
     environment: 
       - "RABBITMQHOST=rabbitmq"
 
