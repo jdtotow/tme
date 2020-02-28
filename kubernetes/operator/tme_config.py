@@ -21,9 +21,9 @@ elasticsearch_hostname = "elasticsearch"
 #Prometheus config 
 prometheus = {'image': 'prom/prometheus','ports': [prometheus_port]}
 prometheus['env'] = {}
-prometheus['containerPorts'] = [{"containerPort": prometheus_port}]
 prometheus['args'] = ["--config.file=/etc/prometheus/prometheus.yml","--storage.tsdb.path=/prometheus","--web.console.libraries=/etc/prometheus/console_libraries","--storage.tsdb.retention.time=48h","--web.console.templates=/etc/prometheus/consoles","--web.enable-lifecycle"]
-prometheus['volumes'] = [{"name": "prometheus-config-file","mountPath":"/etc/prometheus/prometheus.yml","subPath":"prometheus.yml"},{"name":"config-volume","mountPath":"/etc/prometheus"},{"name": "prometheus-tsdb","mountPath":"/prometheus"}]
+prometheus['mounts'] = [{"name": "prometheus-config-file","mountPath":"/etc/prometheus/prometheus.yml","subPath":"prometheus.yml"},{"name":"config-volume","mountPath":"/etc/prometheus"},{"name": "prometheus-tsdb","mountPath":"/prometheus"}]
+prometheus['volumes'] = [{'name':'prometheus-config-file','configMap':{'name':'configmap-prometheus','key':'prometheus.yml','path':'prometheus.yml'}},{'name':'config-volume','persistentVolumeClaim':{'name': 'config-volume-prometheus'}},{'name':'prometheus-tsdb','persistentVolumeClaim':{'name':'prometheus-tsdb-volume'}}]
 
 #PrometheusBeat config 
 prometheusbeat = {'image': 'jdtotow/prometheusbeat','ports': [55679,55680],'containers': 2}
@@ -37,7 +37,7 @@ outapi['env'] = {"ELASTICSEARCHHOST":elasticsearch_hostname,"MONGODBHOST":mongod
 #manager
 manager = {'image':'jdtotow/manager','ports': [55671]}
 manager['env'] = {"MONGODB_HOST":mongodb_uri,"RABBITMQHOST":rabbitmq_hostname,"URLEXPORTER":"http://localhost:55671","COMPONENTNAME":"manager","NTHREADSCONSUMER":5}
-
+manager['mounts'] = [{"name": "manager-config-file","mountPath":"/config/config.json","subPath":"config.json"}]
 #exporter
 exporter = {'image':'jdtotow/exporter','ports': [55684]}
 exporter['env'] = {"RABBITMQHOSTNAME":rabbitmq_hostname}
@@ -65,14 +65,17 @@ grafana['env'] = {}
 #pdp
 pdp = {'image':'jdtotow/pdp'}
 pdp['env'] = {"RABBITMQHOSTNAME":rabbitmq_hostname,"CONFIGFILEPATH":"/config","EVALUATIONINTERVAL":60}
+pdp['mounts'] = [{"name": "pdp-config-file","mountPath":"/config/config.json","subPath":"config.json"}]
 
 #ml
 ml = {'image':'jdtotow/ml'}
 ml['env'] = {"RABBITMQHOST":rabbitmq_hostname}
+ml['mounts'] = [{"name": "ml-config-file","mountPath":"/dataset","subPath":""}]
 
 #qos
 qos = {'image':'jdtotow/qos','ports': [55682]}
 qos['env'] = {"RABBITMQHOSTNAME":rabbitmq_hostname,"CONFIGFILEPATH":"/config","EXPORTERPORT":55682,"EXPORTER_URL":"http://qos:55682"}
+qos['mounts'] = [{"name": "qos-config-file","mountPath":"/config/config.json","subPath":"config.json"}]
 
 def get_configs():
     return {'prometheus': prometheus,'prometheusbeat': prometheusbeat,'outapi': outapi,'exporter': exporter,'optimizer': optimizer,'pdp': pdp,'manager': manager,'ml': ml, 'qos': qos, 'mongodb': mongodb,'rabbitmq':rabbitmq,'rabbitmq_exporter': rabbitmq_exporter,'grafana': grafana}

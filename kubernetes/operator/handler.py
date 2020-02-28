@@ -2,7 +2,7 @@ import kopf, kubernetes, yaml, tme_config, time
 
 configs = tme_config.get_configs()
 dict_properties = {}
-list_config_field = ['image','ports','env']
+list_config_field = ['image','ports','env','mounts','volumes']
 list_types = ['prometheus','prometheusbeat','outapi','exporter','optimizer','pdp','manager','ml', 'qos','mongodb','rabbitmq','rabbitmq_exporter','grafana']
 pod = {}
 svc = []
@@ -14,13 +14,59 @@ def get_config(_type,config):
         return None 
     return configs[_type][config]
 
+def prepareEnvironmentVariable(_envs):
+    if _envs.keys() == []:
+        return None 
+    else:
+        return _envs 
+def prepareContainerPorts(_ports):
+    if _ports == []:
+        return None 
+    else:
+        result = []
+        for port in _ports:
+            result.append({'containerPort': port})
+        return result 
+def prepareVolumes(volumes):
+    if volumes == []:
+        return None 
+    else:
+        result = []
+        for v in volumes:
+            if not 'name' in v:
+                raise kopf.HandlerFatalError(f"Volume declaration incorrect")
+            volume = {}
+            volume['name'] = v['name']
+            if 'configMap' in v:
+                volume['configMap'] = {'name': v['configMap']['name'],'items': [{'key': v['configMap']['key'],'path':v['configMap']['path']}]}
+            elif 'persistentVolumeClaim' in v:
+                volume['persistentVolumeClaim'] = {'claimName': v['persistentVolumClaim']['name']}
+            result.append(volume)
+        return result 
+
 def set_pod_svc(_type):
     for k in list_config_field:
         _value = get_config(_type,k)
         dict_properties[k] = _value
     if dict_properties['image'] == None:
         raise kopf.HandlerFatalError(f"Image must be specified")
-    pod = { 'containers': [ { 'image': dict_properties['image'], 'name': type, 'env': [ dict_properties['env'] ] } ]}
+    #adding the image
+    pod = { 'containers': [ { 'image': dict_properties['image'], 'name': type}]}
+    #adding environment variables
+    _envs = prepareEnvironmentVariable(dict_properties['env'])
+    if _envs != None:
+        pod['env'] = _envs 
+    #adding containers port 
+    _ports = prepareContainerPorts(dict_properties['ports'])
+    if _ports != None:
+        pod['ports'] = _ports 
+    #adding volumes
+    _mounts = dict_properties['mounts']
+    if not _mounts == []:
+        pod['volumeMounts'] = _mounts
+    _volumes = prepareVolumes(dict_properties['volumes'])
+    if _volumes != None:
+        pod['volumes'] = _volumes 
     for port in dict_properties['ports']:
         svc.append({ 'port': port, 'targetPort': port}) 
     return pod, svc
