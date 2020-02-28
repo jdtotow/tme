@@ -21,30 +21,23 @@ class Worker(Thread):
         self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=self.host,port=self.port,credentials=credentials))
         self.channel = self.connection.channel()
         self.channel.queue_declare(queue=self.queue, durable=True)
-        #self.channel.queue_bind(queue=self.queue,exchange=self.exchange)
+        if self.exchange != "":
+            self.channel.queue_bind(queue=self.queue,exchange=self.exchange)
         self.channel.basic_qos(prefetch_count=1)
         self.channel.basic_consume(queue=self.queue,on_message_callback=self.callback)
         self.connection_state = True 
     def startConsuming(self):
         try:
             self.channel.start_consuming()
-        except:
+        except Exception as e:
+            print(e)
             self.connection_state = False 
-        """try:
-            
-        except:
-            print("Consumer thread failed, restart in 10s...")
-            if self.connection:
-                self.connection.close()
-                time.sleep(10)
-                self.connect()
-                self.startConsuming()"""
     def getConnectionState(self):
         return self.connection_state
     def stop(self):
         self.normal_stop = True 
     def callback(self,channel, method, header, body):
-        self.handler.setData(body)
+        self.handler(body)
         if self.normal_stop:
             if self.connection:
                 self.connection.close()

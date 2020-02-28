@@ -69,15 +69,17 @@ services:
       - "EXPORTERPORT=55679"
       - "DEPLOYMENT=secondary"
   
-  #exporter:
-  #  image: jdtotow/exporter 
-  #  container_name: exporter 
-  #  hostname: exporter 
-  #  restart: always
-  #  networks: 
-  #    - monitoring 
-  #  ports:
-  #    - 55671:55671 
+  exporter:
+    image: jdtotow/exporter
+    container_name: exporter 
+    hostname: exporter 
+    restart: always
+    networks: 
+      - monitoring 
+    ports:
+      - 55684:55684
+    environment: 
+      - "RABBITMQHOSTNAME=rabbitmq" 
   outapi:
     image: jdtotow/output:dci
     container_name: outapi
@@ -223,7 +225,7 @@ services:
     environment:
       - "PROMETHEUSCONFIPATH=/config/prometheus.yml"
       - "PROMETHEUSAPI=http://prometheus:9090"
-      - "HANDLINGINTERVAL=1"
+      - "HANDLINGINTERVAL=5"
       - "MONGODBHOST=mongodb:27017"
       - "MONGODBUSER=uprc"
       - "MONGODBPASSWORD=bigdatastack"

@@ -1,15 +1,9 @@
 FROM jdtotow/monitoring:2
 MAINTAINER Jean-Didier Totow <totow@unipi.gr>
-RUN pip install pymongo confluent_kafka
 COPY app/ /app
-RUN mkdir /config
-COPY config/config.json /config 
 COPY script.sh /
-RUN chmod +x /app/manager.py
-RUN chmod +x /app/wsgi.py
-RUN useradd manager
-RUN chown -R manager /config
-RUN chmod 777 /config/config.json
-EXPOSE 55671 
-USER manager
+RUN chmod +x /app/app.py
+RUN useradd exporter
+EXPOSE 55684
+USER exporter
 CMD ["./script.sh"]

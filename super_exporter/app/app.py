@@ -11,7 +11,7 @@ password = os.environ.get("RABBITMQPASSWORD","bigdatastack")
 host = os.environ.get("RABBITMQHOSTNAME","localhost")
 port = int(os.environ.get("RABBITMQPORT","5672"))
 queue_name = os.environ.get("RABBITMQQUEUENAME","export_metrics")
-n_consumers = int(os.environ.get("NCONSUMERS","1"))
+n_consumers = int(os.environ.get("NCONSUMERS","3"))
 exchange = os.environ.get("EXCHANGE","")
 #//////////////////////////////////////////////////////////////////////////////////
 super_metric_dict = {}
@@ -26,9 +26,9 @@ def responder(status,message):
     return response
 
 app = Flask(__name__)
-import logging
-log = logging.getLogger('werkzeug')
-log.setLevel(logging.ERROR)
+#import logging
+#log = logging.getLogger('werkzeug')
+#log.setLevel(logging.ERROR)
 
 class Manager():
     def __init__(self):
