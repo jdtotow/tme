@@ -67,8 +67,9 @@ def set_pod_svc(_type):
     _volumes = prepareVolumes(dict_properties['volumes'])
     if _volumes != None:
         pod['volumes'] = _volumes 
-    for port in dict_properties['ports']:
-        svc.append({ 'port': port, 'targetPort': port}) 
+    if _ports != None:
+        for port in _ports:
+            svc.append({ 'port': port, 'targetPort': port}) 
     return pod, svc
     
 @kopf.on.create('unipi.gr', 'v1', 'triplemonitoringengines')
@@ -90,7 +91,8 @@ def create_fn(body, spec, **kwargs):
 
     # Make the Pod and Service the children of the Database object
     kopf.adopt(pod, owner=body)
-    kopf.adopt(svc, owner=body)
+    if svc['spec']['ports'] != []:
+        kopf.adopt(svc, owner=body)
 
     # Object used to communicate with the API Server
     api = kubernetes.client.CoreV1Api()
@@ -98,8 +100,9 @@ def create_fn(body, spec, **kwargs):
     obj = api.create_namespaced_pod(namespace, pod)
     print(f"Pod {obj.metadata.name} created")
     # Create Service
-    obj = api.create_namespaced_service(namespace, svc)
-    print(f"NodePort Service {obj.metadata.name} created, exposing on port {obj.spec.ports[0].node_port}")
+    if svc['spec']['ports'] != []:
+        obj = api.create_namespaced_service(namespace, svc)
+        print(f"NodePort Service {obj.metadata.name} created, exposing on port {obj.spec.ports[0].node_port}")
     # Update status
     msg = f"Pod and Service created by TripleMonitoringEngine {name}"
     return {'message': msg}
