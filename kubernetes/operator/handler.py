@@ -4,9 +4,8 @@ configs = tme_config.get_configs()
 dict_properties = {}
 list_config_field = ['image','ports','env','mounts','volumes']
 list_types = ['prometheus','prometheusbeat','outapi','exporter','optimizer','pdp','manager','ml', 'qos','mongodb','rabbitmq','rabbitmq_exporter','grafana']
-pod = {}
-svc = []
 
+print("TME Operator started ...")
 def get_config(_type,config):
     if not _type in configs:
         raise kopf.HandlerFatalError(f"Type must be set. Got {_type}.")
@@ -51,22 +50,23 @@ def set_pod_svc(_type):
     if dict_properties['image'] == None:
         raise kopf.HandlerFatalError(f"Image must be specified")
     #adding the image
-    pod = { 'containers': [ { 'image': dict_properties['image'], 'name': type}]}
+    pod = { 'containers': [ { 'image': dict_properties['image'], 'name': _type}]}
     #adding environment variables
     _envs = prepareEnvironmentVariable(dict_properties['env'])
     if _envs != None:
-        pod['env'] = _envs 
+        pod['containers'][0]['env'] = [] #_envs 
     #adding containers port 
     _ports = prepareContainerPorts(dict_properties['ports'])
     if _ports != None:
-        pod['ports'] = _ports 
+        pod['containers'][0]['ports'] = _ports 
     #adding volumes
     _mounts = dict_properties['mounts']
     if not _mounts == []:
-        pod['volumeMounts'] = _mounts
+        pod['containers'][0]['volumeMounts'] = _mounts
     _volumes = prepareVolumes(dict_properties['volumes'])
     if _volumes != None:
-        pod['volumes'] = _volumes 
+        pod['containers'][0]['volumes'] = _volumes 
+    svc = []
     if _ports != None:
         for port in _ports:
             svc.append({ 'port': port, 'targetPort': port}) 
@@ -77,17 +77,17 @@ def create_fn(body, spec, **kwargs):
     # Get info from Database object
     name = body['metadata']['name']
     namespace = body['metadata']['namespace']
-    type = spec['type']
+    _type = spec['type']
     # Make sure type is provided
-    if not type:
-        raise kopf.HandlerFatalError(f"Type must be set. Got {type}.")
+    if not _type:
+        raise kopf.HandlerFatalError(f"Type must be set. Got {_type}.")
+    if not _type in list_types:
+        raise kopf.HandlerFatalError(f"Type {_type} is not TripleMonitoringEngine type")
     # Pod template
     pod = {'apiVersion': 'v1', 'metadata': {'name' : name, 'labels': {'app': 'tme'}}}
     # Service template
     svc = {'apiVersion': 'v1', 'metadata': {'name' : name}, 'spec': { 'selector': {'app': 'tme'}, 'type': 'NodePort'}}
-    if not type in list_types:
-        raise kopf.HandlerFatalError(f"Type {type} is not TripleMonitoringEngine type")
-    pod['spec'], svc['spec']['ports'] = set_pod_svc(type)
+    pod['spec'], svc['spec']['ports'] = set_pod_svc(_type)
 
     # Make the Pod and Service the children of the Database object
     kopf.adopt(pod, owner=body)
