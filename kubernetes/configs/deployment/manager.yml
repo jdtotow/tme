@@ -1,0 +1,6 @@
+apiVersion: unipi.gr/v1
+kind: TripleMonitoringEngine
+metadata:
+  name: manager
+spec:
+  type: manager 

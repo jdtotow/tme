@@ -1,0 +1,6 @@
+apiVersion: unipi.gr/v1
+kind: TripleMonitoringEngine
+metadata:
+  name: prometheusbeat
+spec:
+  type: prometheusbeat 

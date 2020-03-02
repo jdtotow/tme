@@ -1,0 +1,6 @@
+apiVersion: unipi.gr/v1
+kind: TripleMonitoringEngine
+metadata:
+  name: pdp
+spec:
+  type: pdp  
