@@ -28,7 +28,7 @@ _workers = 200
 """
 
 _size = 500
-_sleep = 0.1
+_sleep = 0.01
 _workers = 50
 
 while True:

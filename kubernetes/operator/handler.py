@@ -77,17 +77,17 @@ def create_fn(body, spec, **kwargs):
     # Get info from Database object
     name = body['metadata']['name']
     namespace = body['metadata']['namespace']
-    type = spec['type']
+    _type = spec['type']
     # Make sure type is provided
-    if not type:
-        raise kopf.HandlerFatalError(f"Type must be set. Got {type}.")
+    if not _type:
+        raise kopf.HandlerFatalError(f"Type must be set. Got {_type}.")
     # Pod template
     pod = {'apiVersion': 'v1', 'metadata': {'name' : name, 'labels': {'app': 'tme'}}}
     # Service template
     svc = {'apiVersion': 'v1', 'metadata': {'name' : name}, 'spec': { 'selector': {'app': 'tme'}, 'type': 'NodePort'}}
-    if not type in list_types:
-        raise kopf.HandlerFatalError(f"Type {type} is not TripleMonitoringEngine type")
-    pod['spec'], svc['spec']['ports'] = set_pod_svc(type)
+    if not _type in list_types:
+        raise kopf.HandlerFatalError(f"Type {_type} is not TripleMonitoringEngine type")
+    pod['spec'], svc['spec']['ports'] = set_pod_svc(_type)
 
     # Make the Pod and Service the children of the Database object
     kopf.adopt(pod, owner=body)

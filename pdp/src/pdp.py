@@ -21,7 +21,7 @@ last_all_applications_list_updated = time.time()
 all_applications_list_update_interval = int(os.environ.get("APPLICATIONSLISTUPDATEINTERVAL","400"))
 baskets_evaluation_period = int(os.environ.get("BASKETEVALUATIONPERIOD","20"))
 last_baskets_evaluation = time.time()
-_max_relevant_influencers = int(os.environ.get("MAXNUMBERFEATURE","10"))
+_max_relevant_influencers = int(os.environ.get("MAXNUMBERFEATURE","19"))
 
 class PublisherOnce():
     def __init__(self,exchange,queue,message):
@@ -184,6 +184,7 @@ class Basket():
         self.dependencies = None 
         self.violation = None 
         self.state = 'active'
+        self.highest_distance = None 
     def setState(self,state):
         self.state = state 
     def getState(self):
@@ -281,8 +282,12 @@ class Basket():
             y = np.array(list_value_time_serie)
             manhattan_distance = lambda x, y: np.abs(x - y)
             d, cost_matrix, acc_cost_matrix, path = dtw(x, y, dist=manhattan_distance)
+            if self.highest_distance == None or d > self.highest_distance:
+                self.highest_distance = d 
             return d 
         except:
+            if self.highest_distance != None:
+                return self.highest_distance
             return 2000
     def evaluate(self):
         slo_time_serie = self.getSLOTimeSerie()
