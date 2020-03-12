@@ -16,23 +16,39 @@ def prepareList(_size):
     for i in range(_size):
         result.append(recommender_url)
     return result
-"""
-No violation
-_size = 50
-_sleep = 0.1
-_workers = 20
-Mild violation
-_size = 500
-_sleep = 0.1
-_workers = 200
-"""
 
-_size = 500
 _sleep = 0.01
 _workers = 50
 
-while True:
-    _list = prepareList(_size)
-    startWorkers(_workers, sender, _list)
-    print(str(_size)+" request sent, sleep ...")
-    time.sleep(_sleep)
+up_period = 10
+down_period = 30
+
+def high():
+    _size = 1000
+    _start = time.time()
+    while True:
+        _list = prepareList(_size)
+        startWorkers(_workers, sender, _list)
+        print(str(_size)+" request sent, sleep ...")
+        time.sleep(_sleep)
+        if time.time() - _start > up_period*60:
+            break 
+
+def down():
+    _size = 300
+    _start = time.time()
+    while True:
+        _list = prepareList(_size)
+        startWorkers(_workers, sender, _list)
+        print(str(_size)+" request sent, sleep ...")
+        time.sleep(_sleep)
+        if time.time() - _start > down_period*60:
+            break
+
+def main():
+    while True:
+        down()
+        high()
+        time.sleep(_sleep)
+
+main()

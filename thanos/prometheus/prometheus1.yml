@@ -1,5 +1,7 @@
 global:
   scrape_interval: 15s
+  external_labels:
+    replicas: prom-0
 scrape_configs:
 - job_name: prometheus
   scrape_interval: 12s

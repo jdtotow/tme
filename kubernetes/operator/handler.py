@@ -2,10 +2,9 @@ import kopf, kubernetes, yaml, tme_config, time
 
 configs = tme_config.get_configs()
 dict_properties = {}
-list_config_field = ['image','ports','env','mounts','volumes']
+list_config_field = ['image','ports','env','mounts','volumes','args']
 list_types = ['prometheus','prometheusbeat','outapi','exporter','optimizer','pdp','manager','ml', 'qos','mongodb','rabbitmq','rabbitmq_exporter','grafana']
-pod = {}
-svc = []
+list_services = ['prometheus','prometheusbeat','outapi','manager','mongodb','rabbitmq','grafana']
 
 def get_config(_type,config):
     if not _type in configs:
@@ -15,17 +14,20 @@ def get_config(_type,config):
     return configs[_type][config]
 
 def prepareEnvironmentVariable(_envs):
-    if _envs.keys() == []:
+    if len(_envs.keys()) == 0:
         return None 
     else:
-        return _envs 
+        result = []
+        for k in _envs.keys():
+            result.append({'name': k, 'value': str(_envs[k])})
+        return result 
 def prepareContainerPorts(_ports):
     if _ports == []:
         return None 
     else:
         result = []
         for port in _ports:
-            result.append({'containerPort': port})
+            result.append({'containerPort': port['port']})
         return result 
 def prepareVolumes(volumes):
     if volumes == []:
@@ -40,37 +42,46 @@ def prepareVolumes(volumes):
             if 'configMap' in v:
                 volume['configMap'] = {'name': v['configMap']['name'],'items': [{'key': v['configMap']['key'],'path':v['configMap']['path']}]}
             elif 'persistentVolumeClaim' in v:
-                volume['persistentVolumeClaim'] = {'claimName': v['persistentVolumClaim']['name']}
+                volume['persistentVolumeClaim'] = {'claimName': v['persistentVolumeClaim']['name']}
+            else:
+                kopf.HandlerFatalError(f"Volume declaration not recognized")
             result.append(volume)
         return result 
-
-def set_pod_svc(_type):
+def set_svc(_ports):
+    if _ports != None:
+        svc = []
+        for port in _ports:
+            svc.append({ 'port': port['port'], 'targetPort': port['port'],'name':port['name']})
+        return svc 
+    return None 
+def set_pod(_type):
     for k in list_config_field:
         _value = get_config(_type,k)
         dict_properties[k] = _value
     if dict_properties['image'] == None:
         raise kopf.HandlerFatalError(f"Image must be specified")
     #adding the image
-    pod = { 'containers': [ { 'image': dict_properties['image'], 'name': type}]}
+    pod = { 'containers': [ { 'image': dict_properties['image'], 'name': _type}]}
     #adding environment variables
     _envs = prepareEnvironmentVariable(dict_properties['env'])
     if _envs != None:
-        pod['env'] = _envs 
+        pod['containers'][0]['env'] = _envs
     #adding containers port 
     _ports = prepareContainerPorts(dict_properties['ports'])
     if _ports != None:
-        pod['ports'] = _ports 
+        pod['containers'][0]['ports'] = _ports 
     #adding volumes
     _mounts = dict_properties['mounts']
     if not _mounts == []:
-        pod['volumeMounts'] = _mounts
+        pod['containers'][0]['volumeMounts'] = _mounts
     _volumes = prepareVolumes(dict_properties['volumes'])
     if _volumes != None:
-        pod['volumes'] = _volumes 
-    if _ports != None:
-        for port in _ports:
-            svc.append({ 'port': port, 'targetPort': port}) 
-    return pod, svc
+        pod['volumes'] = _volumes
+    #adding args if exists
+    _args = dict_properties['args']
+    if _args != None:
+        pod['containers'][0]['args'] = _args  
+    return pod
     
 @kopf.on.create('unipi.gr', 'v1', 'triplemonitoringengines')
 def create_fn(body, spec, **kwargs):
@@ -81,17 +92,30 @@ def create_fn(body, spec, **kwargs):
     # Make sure type is provided
     if not _type:
         raise kopf.HandlerFatalError(f"Type must be set. Got {_type}.")
+<<<<<<< HEAD
+=======
+    if not _type in list_types:
+        raise kopf.HandlerFatalError(f"Type {_type} is not TripleMonitoringEngine type")
+>>>>>>> 96e8b913e3c98631df20c9e9cc34216a8a786256
     # Pod template
-    pod = {'apiVersion': 'v1', 'metadata': {'name' : name, 'labels': {'app': 'tme'}}}
+    pod = {'apiVersion': 'v1', 'metadata': {'name' : name, 'labels': {'app': name}}}
     # Service template
+<<<<<<< HEAD
     svc = {'apiVersion': 'v1', 'metadata': {'name' : name}, 'spec': { 'selector': {'app': 'tme'}, 'type': 'NodePort'}}
     if not _type in list_types:
         raise kopf.HandlerFatalError(f"Type {_type} is not TripleMonitoringEngine type")
     pod['spec'], svc['spec']['ports'] = set_pod_svc(_type)
+=======
+    svc = None 
+    if _type in list_services:
+        svc = {'apiVersion': 'v1', 'metadata': {'name' : name}, 'spec': { 'selector': {'app': name}, 'type': 'NodePort'}}
+        svc['spec']['ports'] = set_svc(get_config(_type,'ports'))
+>>>>>>> 96e8b913e3c98631df20c9e9cc34216a8a786256
 
-    # Make the Pod and Service the children of the Database object
+    pod['spec'] = set_pod(_type)
+    # Make the Pod and Service the children of the TripleMonitoringEngine object
     kopf.adopt(pod, owner=body)
-    if svc['spec']['ports'] != []:
+    if svc != None and svc['spec']['ports'] != []:
         kopf.adopt(svc, owner=body)
 
     # Object used to communicate with the API Server
@@ -100,7 +124,7 @@ def create_fn(body, spec, **kwargs):
     obj = api.create_namespaced_pod(namespace, pod)
     print(f"Pod {obj.metadata.name} created")
     # Create Service
-    if svc['spec']['ports'] != []:
+    if svc != None and svc['spec']['ports'] != []:
         obj = api.create_namespaced_service(namespace, svc)
         print(f"NodePort Service {obj.metadata.name} created, exposing on port {obj.spec.ports[0].node_port}")
     # Update status

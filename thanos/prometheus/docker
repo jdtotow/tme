@@ -1,0 +1,2 @@
+sudo docker run -d -v /home/monitoring/Downloads/prometheus.yml:/etc/prometheus/prometheus.yml --hostname prometheus-host --name prometheus -p 9090:9090 prom/prometheus
+
