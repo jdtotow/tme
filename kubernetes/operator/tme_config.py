@@ -22,12 +22,12 @@ elasticsearch_hostname = "elasticsearch."+namespace+"."+domain
 prometheus = {'image': 'prom/prometheus','ports': prometheus_port}
 prometheus['env'] = {}
 prometheus['args'] = ["--config.file=/etc/prometheus/prometheus.yml","--storage.tsdb.path=/prometheus","--web.console.libraries=/etc/prometheus/console_libraries","--storage.tsdb.retention.time=48h","--web.console.templates=/etc/prometheus/consoles","--web.enable-lifecycle"]
-prometheus['mounts'] = [{"name": "prometheus-config-file-volume","mountPath":"/etc/prometheus/prometheus.yml","subPath":"prometheus.yml"},{"name":"config-volume","mountPath":"/etc/prometheus"},{"name": "prometheus-tsdb-volume","mountPath":"/prometheus"}]
-prometheus['volumes'] = [{'name':'prometheus-config-file-volume','configMap':{'name':'configmap-prometheus','key':'prometheus.yml','path':'prometheus.yml'}},{'name':'config-volume','persistentVolumeClaim':{'name': 'config-volume-prometheus'}},{'name':'prometheus-tsdb-volume','persistentVolumeClaim':{'name':'prometheus-tsdb'}}]
-
+prometheus['mounts'] = [{"name": "prometheus-config-file-volume","mountPath":"/etc/prometheus/prometheus.yml","subPath":"prometheus.yml"},{"name":"config-volume-prometheus","mountPath":"/etc/prometheus"},{"name": "prometheus-tsdb","mountPath":"/prometheus"}]
+prometheus['volumes'] = [{'name':'prometheus-config-file-volume','configMap':{'name':'configmap-prometheus','key':'prometheus.yml','path':'prometheus.yml'}},{'name':'config-volume-prometheus','persistentVolumeClaim':{'name': 'prometheus-config-claim'}},{'name':'prometheus-tsdb','persistentVolumeClaim':{'name':'prometheus-tsdb-claim'}}]
+prometheus['initContainers'] = [{"name": "prometheus-config-permission-fix","image": "busybox","command": ["/bin/chmod","-R","777","/config"],"volumeMounts": [{"name": "config-volume-prometheus","mountPath": "/config"}]},{"name": "prometheus-tsdb-permission-fix","image": "busybox","command": ["/bin/chmod","-R","777","/tsdb"],"volumeMounts": [{"name": "prometheus-tsdb","mountPath": "/tsdb"}]}]
 #PrometheusBeat config 
 prometheusbeat = {'image': 'jdtotow/prometheusbeat','ports': [{'port':55679,'name':'master'},{'port':55680,'name':'secondary'}]}
-prometheusbeat['env'] = {"PROMETHEUS_URL_API":prometheus_url,"EXPORTER_URL":"http://localhost:55679","METRICS_SOURCE":"manager,qos,optimizer,prometheusbeat,outapi,rabbitmq,pushgateway,exporter","RABBITMQ_HOST":rabbitmq_hostname,"SLEEP":0.1,"COMPONENTNAME":"prometheusbeat","UPDATEMETRICSLISTNAMEPERIOD":32,"HTTP_OUT_URL":"http://optimizer:55674/beats","EXPORTERPORT":55679,"DEPLOYMENT":"primary"}
+prometheusbeat['env'] = {"PROMETHEUS_URL_API":prometheus_url,"EXPORTER_URL":"http://localhost:55679","METRICS_SOURCE":"manager,qos,optimizer,prometheusbeat,outapi,rabbitmq,pushgateway,exporter","RABBITMQ_HOST":rabbitmq_hostname,"SLEEP":0.1,"COMPONENTNAME":"prometheusbeat","UPDATEMETRICSLISTNAMEPERIOD":32,"EXPORTERPORT":55679,"DEPLOYMENT":"primary"}
 prometheusbeat['mounts'] = []
 prometheusbeat['volumes'] = []
 #outapi

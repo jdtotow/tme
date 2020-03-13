@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: prometheus-tsdb-volume 
+  name: prometheus-tsdb-claim   
 spec:
   storageClassName: manual
   accessModes:

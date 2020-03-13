@@ -2,9 +2,40 @@ import kopf, kubernetes, yaml, tme_config, time
 
 configs = tme_config.get_configs()
 dict_properties = {}
-list_config_field = ['image','ports','env','mounts','volumes','args']
+list_config_field = ['image','ports','env','mounts','volumes','args','initContainers']
 list_types = ['prometheus','prometheusbeat','outapi','exporter','optimizer','pdp','manager','ml', 'qos','mongodb','rabbitmq','rabbitmq_exporter','grafana']
 list_services = ['prometheus','prometheusbeat','outapi','manager','mongodb','rabbitmq','grafana']
+
+class KubeObject():
+    def __init__(self, name, creation, _object, _type):
+        self.name = name 
+        self.creation = creation
+        self._object = _object 
+        self._type = _type 
+    def getName(self):
+        return self.name 
+    def getType(self):
+        return self._type
+
+class Register():
+    def __init__(self):
+        self.collector = {}
+    def createKubeObject(self,name,_object,_type):
+        kube_object = KubeObject(name,time.time(),_object,_type)
+        self.collector[_type+"-"+name] = kube_object
+    def getKubeObject(self,name,_type):
+        key = _type+"-"+name 
+        if key in self.collector:
+            return self.collector[key]
+        return None 
+    def removeKubeObject(self,name,_type):
+        key = _type+"-"+name 
+        if key in self.collector:
+            del self.collector[key]
+            return True
+        return False 
+
+register = Register()
 
 def get_config(_type,config):
     if not _type in configs:
@@ -77,6 +108,9 @@ def set_pod(_type):
     _volumes = prepareVolumes(dict_properties['volumes'])
     if _volumes != None:
         pod['volumes'] = _volumes
+    #fix mount acces right
+    if dict_properties['initContainers'] != None:
+        pod['initContainers'] = dict_properties['initContainers']
     #adding args if exists
     _args = dict_properties['args']
     if _args != None:
@@ -99,7 +133,7 @@ def create_fn(body, spec, **kwargs):
     # Service template
     svc = None 
     if _type in list_services:
-        svc = {'apiVersion': 'v1', 'metadata': {'name' : name}, 'spec': { 'selector': {'app': name}, 'type': 'NodePort'}}
+        svc = {'apiVersion': 'v1', 'metadata': {'name' : name}, 'spec': { 'selector': {'app': name}, 'type': 'LoadBalancer'}}
         svc['spec']['ports'] = set_svc(get_config(_type,'ports'))
 
     pod['spec'] = set_pod(_type)
@@ -112,10 +146,12 @@ def create_fn(body, spec, **kwargs):
     api = kubernetes.client.CoreV1Api()
     # Create Pod
     obj = api.create_namespaced_pod(namespace, pod)
+    register.createKubeObject(_type,obj,"pod")
     print(f"Pod {obj.metadata.name} created")
     # Create Service
     if svc != None and svc['spec']['ports'] != []:
         obj = api.create_namespaced_service(namespace, svc)
+        register.createKubeObject(_type,obj,"svc")
         print(f"NodePort Service {obj.metadata.name} created, exposing on port {obj.spec.ports[0].node_port}")
     # Update status
     msg = f"Pod and Service created by TripleMonitoringEngine {name}"
@@ -124,4 +160,7 @@ def create_fn(body, spec, **kwargs):
 @kopf.on.delete('unipi.gr', 'v1', 'triplemonitoringengines')
 def delete(body, **kwargs):
     msg = f"TripleMonitoringEngine {body['metadata']['name']} and its Pod / Service children deleted"
+    name = body['metadata']['name']
+    register.removeKubeObject(name,"pod")
+    register.removeKubeObject(name,"svc")
     return {'message': msg}

@@ -11,4 +11,4 @@ spec:
   accessModes:
     - ReadWriteOnce
   hostPath:
-    path: "/home/jean-didier/volumes"
+    path: "/home/jean-didier/mongodb"
