@@ -154,6 +154,7 @@ def create_fn(body, spec, **kwargs):
         # volumes {'name':'sidecar-volume-prometheus','persistentVolumeClaim':{'name': 'sidecar-prometheus-volume-claim'}}
         pod['spec']['containers'][0]['volumeMounts'][1] = {"name": spec['volume']['name'], "mountPath":"/prometheus"}
         pod['spec']['volumes'][1] = {"name": spec['volume']['name'],'persistentVolumeClaim':{'name': spec['volume']['claim_name']}}
+        pod['spec']['initContainers'][0]["volumeMounts"][0]["name"] = spec['volume']['name']
         #creation of a service
         svc = {'apiVersion': 'v1', 'metadata': {'name' : name}, 'spec': { 'selector': {'app': name}, 'type': 'LoadBalancer'}}
         svc['spec']['ports'] = set_svc(get_config("sidecar",'ports'))
