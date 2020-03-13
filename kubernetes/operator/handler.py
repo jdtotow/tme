@@ -2,7 +2,7 @@ import kopf, kubernetes, yaml, tme_config, time
 
 configs = tme_config.get_configs()
 dict_properties = {}
-list_config_field = ['image','ports','env','mounts','volumes','args','initContainers']
+list_config_field = ['image','ports','env','mounts','volumes','args','initContainers','command']
 list_types = ['prometheus','prometheusbeat','querier','gateway','outapi','exporter','optimizer','pdp','manager','ml', 'qos','mongodb','rabbitmq','rabbitmq_exporter','grafana','sidecar','minio','compactor']
 list_services = ['prometheus','prometheusbeat','outapi','manager','gateway','mongodb','rabbitmq','grafana','sidecar','querier','minio']
 
@@ -114,7 +114,10 @@ def set_pod(_type):
     #adding args if exists
     _args = dict_properties['args']
     if _args != None:
-        pod['containers'][0]['args'] = _args  
+        pod['containers'][0]['args'] = _args 
+    _command = dict_properties['command']
+    if _command != None:
+        pod['containers'][0]['command'] = _command 
     return pod
     
 @kopf.on.create('unipi.gr', 'v1', 'triplemonitoringengines')
