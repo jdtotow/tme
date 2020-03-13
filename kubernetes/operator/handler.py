@@ -142,7 +142,7 @@ def create_fn(body, spec, **kwargs):
     api = kubernetes.client.CoreV1Api()
     # check tme-prometheus type
     if _type == "tme-prometheus":
-        if register.checkObjectName("querier"):
+        if register.checkObjectName("querier") == None:
             raise kopf.HandlerFatalError(f"Deploy first a querier type")
         #create sidecar pod 
         pod = {'apiVersion': 'v1', 'metadata': {'name' : name, 'labels': {'app': name}}}
