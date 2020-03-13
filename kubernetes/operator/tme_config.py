@@ -25,7 +25,7 @@ sidecar_hostname = "sidecar-main."+namespace+"."+domain
 sidecar_url = sidecar_hostname+":"+str(thanos_ports[0]['port'])
 gateway_hostname = "gateway."+namespace+"."+domain
 gateway_url = gateway_hostname+":"+str(thanos_ports[0]['port'])
-querier_url = "querier."+namespace+"."+domain+":"+str(thanos_ports[1]['port'])
+querier_url = "http://querier."+namespace+"."+domain+":"+str(thanos_ports[1]['port'])
 #/////////////////////////////////////////////////////////////////////////////////////////////////
 minio_ports = [{'port':9000,'name': 'service'}]
 minio_hostname = "minio."+namespace+"."+domain

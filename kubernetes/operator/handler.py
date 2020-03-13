@@ -3,7 +3,7 @@ import kopf, kubernetes, yaml, tme_config, time
 configs = tme_config.get_configs()
 dict_properties = {}
 list_config_field = ['image','ports','env','mounts','volumes','args','initContainers','command']
-list_types = ['prometheus','prometheusbeat','querier','gateway','outapi','exporter','optimizer','pdp','manager','ml', 'qos','mongodb','rabbitmq','rabbitmq_exporter','grafana','sidecar','minio','compactor']
+list_types = ['prometheus','prometheusbeat','querier','gateway','outapi','exporter','optimizer','pdp','manager','ml', 'qos','mongodb','rabbitmq','rabbitmq_exporter','grafana','sidecar','minio','compactor','tme-prometheus']
 list_services = ['prometheus','prometheusbeat','outapi','manager','gateway','mongodb','rabbitmq','grafana','sidecar','querier','minio']
 
 class KubeObject():
@@ -12,10 +12,14 @@ class KubeObject():
         self.creation = creation
         self._object = _object 
         self._type = _type 
+    def getType(self):
+        return self._type 
     def getName(self):
         return self.name 
     def getType(self):
         return self._type
+    def getObject(self):
+        return self._object
 
 class Register():
     def __init__(self):
@@ -28,6 +32,11 @@ class Register():
         if key in self.collector:
             return self.collector[key]
         return None 
+    def checkObjectName(self,name):
+        for k in self.collector.keys():
+            if name == self.collector[k].getName():
+                return True 
+        return False 
     def removeKubeObject(self,name,_type):
         key = _type+"-"+name 
         if key in self.collector:
@@ -129,6 +138,40 @@ def create_fn(body, spec, **kwargs):
     # Make sure type is provided
     if not _type:
         raise kopf.HandlerFatalError(f"Type must be set. Got {_type}.")
+    # Object used to communicate with the API Server
+    api = kubernetes.client.CoreV1Api()
+    # check tme-prometheus type
+    if _type == "tme-prometheus":
+        if register.checkObjectName("querier"):
+            raise kopf.HandlerFatalError(f"Deploy first a querier type")
+        #create sidecar pod 
+        pod = {'apiVersion': 'v1', 'metadata': {'name' : name, 'labels': {'app': name}}}
+        pod['spec'] = set_pod("sidecar")
+        #replace prometheus.url value by the provided
+        pod['spec']['containers'][0]['args'][2] = '--prometheus.url='+ spec['prometheus']['url']
+        #replace mounts and volumes 
+        # mounts {"name":"sidecar-volume-prometheus","mountPath":"/prometheus"}
+        # volumes {'name':'sidecar-volume-prometheus','persistentVolumeClaim':{'name': 'sidecar-prometheus-volume-claim'}}
+        pod['spec']['containers'][0]['volumeMounts'][1] = {"name": spec['volume']['name'], "mountPath":"/prometheus"}
+        pod['spec']['volumes'][1] = {"name": spec['volume']['name'],'persistentVolumeClaim':{'name': spec['volume']['claim_name']}}
+        #creation of a service
+        svc = {'apiVersion': 'v1', 'metadata': {'name' : name}, 'spec': { 'selector': {'app': name}, 'type': 'LoadBalancer'}}
+        svc['spec']['ports'] = set_svc(get_config("sidecar",'ports'))
+        _new_service_hostname = name+"."+namespace+".svc.cluster.local:"+ str(svc['spec']['ports'][0]['port'])
+        kopf.adopt(pod, owner=body)
+        kopf.adopt(svc, owner=body)
+        obj = api.create_namespaced_pod(namespace, pod)
+        register.createKubeObject(_type,pod,"pod")
+        obj = api.create_namespaced_service(namespace, svc)
+        register.createKubeObject(_type,svc,"svc")
+        #adding new service created to the current querier
+        querier_obj = register.getKubeObject("querier","pod").getObject()
+        #'--store='+sidecar_url
+        querier_obj['spec']['containers'][0]['args'].append('--store='+_new_service_hostname)
+        obj = api.create_namespaced_pod(namespace, querier_obj)
+        msg = f"Pod and Service created by TripleMonitoringEngine {name}"
+        return {'message': msg}
+
     # Pod template
     pod = {'apiVersion': 'v1', 'metadata': {'name' : name, 'labels': {'app': name}}}
     if not _type in list_types:
@@ -145,16 +188,14 @@ def create_fn(body, spec, **kwargs):
     if svc != None and svc['spec']['ports'] != []:
         kopf.adopt(svc, owner=body)
 
-    # Object used to communicate with the API Server
-    api = kubernetes.client.CoreV1Api()
     # Create Pod
     obj = api.create_namespaced_pod(namespace, pod)
-    register.createKubeObject(_type,obj,"pod")
+    register.createKubeObject(_type,pod,"pod")
     print(f"Pod {obj.metadata.name} created")
     # Create Service
     if svc != None and svc['spec']['ports'] != []:
         obj = api.create_namespaced_service(namespace, svc)
-        register.createKubeObject(_type,obj,"svc")
+        register.createKubeObject(_type,svc,"svc")
         print(f"NodePort Service {obj.metadata.name} created, exposing on port {obj.spec.ports[0].node_port}")
     # Update status
 

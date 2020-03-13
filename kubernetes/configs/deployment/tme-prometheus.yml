@@ -1,0 +1,12 @@
+apiVersion: unipi.gr/v1
+kind: TripleMonitoringEngine
+metadata:
+  name: prometheus-ks8
+spec:
+  type: tme-prometheus 
+  prometheus:
+    url: prometheus.ks8.svc.cluster.local 
+    externals-labels: replicas 
+  volume:
+    name: volume-prometheus-ks8 
+    claim_name: volume-prometheus-ks8-claim 
