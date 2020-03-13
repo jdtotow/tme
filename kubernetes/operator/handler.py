@@ -145,6 +145,7 @@ def create_fn(body, spec, **kwargs):
         if register.checkObjectName("querier") == None:
             raise kopf.HandlerFatalError(f"Deploy first a querier type")
         #create sidecar pod 
+        name = 'sidebar-'+name 
         pod = {'apiVersion': 'v1', 'metadata': {'name' : name, 'labels': {'app': name}}}
         pod['spec'] = set_pod("sidecar")
         #replace prometheus.url value by the provided
@@ -153,7 +154,7 @@ def create_fn(body, spec, **kwargs):
         # mounts {"name":"sidecar-volume-prometheus","mountPath":"/prometheus"}
         # volumes {'name':'sidecar-volume-prometheus','persistentVolumeClaim':{'name': 'sidecar-prometheus-volume-claim'}}
         pod['spec']['containers'][0]['volumeMounts'][1] = {"name": spec['volume']['name'], "mountPath":"/prometheus"}
-        pod['spec']['volumes'][1] = {"name": spec['volume']['name'],'persistentVolumeClaim':{'name': spec['volume']['claim_name']}}
+        pod['spec']['volumes'][1] = {"name": spec['volume']['name'],'persistentVolumeClaim':{'claimName': spec['volume']['claim_name']}}
         pod['spec']['initContainers'][0]["volumeMounts"][0]["name"] = spec['volume']['name']
         #creation of a service
         svc = {'apiVersion': 'v1', 'metadata': {'name' : name}, 'spec': { 'selector': {'app': name}, 'type': 'LoadBalancer'}}
@@ -167,6 +168,8 @@ def create_fn(body, spec, **kwargs):
         register.createKubeObject(_type,svc,"svc")
         #adding new service created to the current querier
         querier_obj = register.getKubeObject("querier","pod").getObject()
+        api.delete_namespaced_pod("querier", namespace)
+        time.sleep(5) #sleep some moment
         #'--store='+sidecar_url
         querier_obj['spec']['containers'][0]['args'].append('--store='+_new_service_hostname)
         obj = api.create_namespaced_pod(namespace, querier_obj)
