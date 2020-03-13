@@ -134,7 +134,7 @@ qos['mounts'] = [{"name": "qos-config-file-volume","mountPath":"/config/config.j
 qos['volumes'] = [{'name':'qos-config-file-volume','configMap':{'name':'configmap-qos','key':'config.json','path':'config.json'}}]
 #minio
 minio = {'image': 'minio/minio:RELEASE.2020-01-03T19-12-21Z', 'ports': minio_ports}
-minio['args'] = ['-c','mkdir -p /data/thanos-bucket && /usr/bin/minio server /data']
+minio['args'] = ['/usr/bin/minio server /data']
 minio['env'] = {'MINIO_ACCESS_KEY':'smth','MINIO_SECRET_KEY':'Need8Chars'}
 minio['mounts'] = [{"name": "minio-volume","mountPath":"/data","subPath":""}]
 minio['volumes'] = [{'name':'minio-volume','persistentVolumeClaim':{'name':'minio-volume-claim'}}]
