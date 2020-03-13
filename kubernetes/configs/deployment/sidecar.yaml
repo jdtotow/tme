@@ -1,6 +1,6 @@
 apiVersion: unipi.gr/v1
 kind: TripleMonitoringEngine
 metadata:
-  name: prometheus
+  name: sidecar-main
 spec:
-  type: prometheus 
+  type: sidecar 
