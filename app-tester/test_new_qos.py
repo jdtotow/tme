@@ -11,7 +11,7 @@ def callback(channel, method, header, body):
     print(body)
     channel.basic_ack(method.delivery_tag)
 
-message = {'request': 'define_qos','application': 'provide-recomendation-service','percentage': 60,'slo':'responseTime','type':'>','queue': queue,'deployment':'tester','threshold':150,'prediction':True,'interval':120,'under_utilization_threshold': 20,'dependencies':['prometheus','node_exporter','manager'],'target':{'application':'atos-ml','component':'recommender','host':'pushgateway','port':9091,'labels':{"provider":"atos-wordline"}}}
+message = {'request': 'define_qos','application': 'provide-recomendation-service','percentage': 60,'slo':'responseTime','type':'>','queue': queue,'deployment':'tester','threshold':200,'prediction':True,'interval':20,'under_utilization_threshold': 20,'dependencies':['prometheus','node_exporter','manager'],'target':{'application':'atos-ml','component':'recommender','host':'pushgateway','port':9091,'labels':{"provider":"atos-wordline"}}}
 
 channel.queue_declare(queue=queue,auto_delete=True)
 channel.queue_bind(queue=queue,exchange="qos-fanout")

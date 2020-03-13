@@ -108,6 +108,7 @@ services:
       - "RABBIT_URL=http://rabbitmq:15672"
       - "RABBIT_USER=richardm"
       - "RABBIT_PASSWORD=bigdatastack"
+      
   #elasticsearch:
   #  image: docker.elastic.co/elasticsearch/elasticsearch:6.6.1
   #  container_name: elasticsearch

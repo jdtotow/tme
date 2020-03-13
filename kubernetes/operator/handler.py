@@ -126,15 +126,25 @@ def create_fn(body, spec, **kwargs):
     # Make sure type is provided
     if not _type:
         raise kopf.HandlerFatalError(f"Type must be set. Got {_type}.")
+<<<<<<< HEAD
+=======
     if not _type in list_types:
         raise kopf.HandlerFatalError(f"Type {_type} is not TripleMonitoringEngine type")
+>>>>>>> 96e8b913e3c98631df20c9e9cc34216a8a786256
     # Pod template
     pod = {'apiVersion': 'v1', 'metadata': {'name' : name, 'labels': {'app': name}}}
     # Service template
+<<<<<<< HEAD
+    svc = {'apiVersion': 'v1', 'metadata': {'name' : name}, 'spec': { 'selector': {'app': 'tme'}, 'type': 'NodePort'}}
+    if not _type in list_types:
+        raise kopf.HandlerFatalError(f"Type {_type} is not TripleMonitoringEngine type")
+    pod['spec'], svc['spec']['ports'] = set_pod_svc(_type)
+=======
     svc = None 
     if _type in list_services:
         svc = {'apiVersion': 'v1', 'metadata': {'name' : name}, 'spec': { 'selector': {'app': name}, 'type': 'LoadBalancer'}}
         svc['spec']['ports'] = set_svc(get_config(_type,'ports'))
+>>>>>>> 96e8b913e3c98631df20c9e9cc34216a8a786256
 
     pod['spec'] = set_pod(_type)
     # Make the Pod and Service the children of the TripleMonitoringEngine object
