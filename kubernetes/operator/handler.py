@@ -3,8 +3,8 @@ import kopf, kubernetes, yaml, tme_config, time
 configs = tme_config.get_configs()
 dict_properties = {}
 list_config_field = ['image','ports','env','mounts','volumes','args','initContainers']
-list_types = ['prometheus','prometheusbeat','querier','gateway','outapi','exporter','optimizer','pdp','manager','ml', 'qos','mongodb','rabbitmq','rabbitmq_exporter','grafana','sidecar']
-list_services = ['prometheus','prometheusbeat','outapi','manager','gateway','mongodb','rabbitmq','grafana','sidecar','querier']
+list_types = ['prometheus','prometheusbeat','querier','gateway','outapi','exporter','optimizer','pdp','manager','ml', 'qos','mongodb','rabbitmq','rabbitmq_exporter','grafana','sidecar','minio','compactor']
+list_services = ['prometheus','prometheusbeat','outapi','manager','gateway','mongodb','rabbitmq','grafana','sidecar','querier','minio']
 
 class KubeObject():
     def __init__(self, name, creation, _object, _type):
@@ -45,7 +45,7 @@ def get_config(_type,config):
     return configs[_type][config]
 
 def prepareEnvironmentVariable(_envs):
-    if len(_envs.keys()) == 0:
+    if _envs == None or len(_envs.keys()) == 0:
         return None 
     else:
         result = []

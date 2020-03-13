@@ -26,8 +26,10 @@ sidecar_url = sidecar_hostname+":"+str(thanos_ports[0]['port'])
 gateway_hostname = "gateway."+namespace+"."+domain
 gateway_url = gateway_hostname+":"+str(thanos_ports[0]['port'])
 querier_url = "querier."+namespace+"."+domain+":"+str(thanos_ports[1]['port'])
-
-
+#/////////////////////////////////////////////////////////////////////////////////////////////////
+minio_ports = [{'port':9000,'name': 'service'}]
+minio_hostname = "minio."+namespace+"."+domain
+minio_url = minio_hostname+":"+ str(minio_ports[0]['port'])
 
 #Prometheus config 
 prometheus = {'image': 'prom/prometheus','ports': prometheus_port}
@@ -51,10 +53,16 @@ querier['volumes'] = []
 querier['env'] = {}
 #thanos gateway 
 gateway = {'image':'quay.io/thanos/thanos:v0.10.0','ports': thanos_ports}
-gateway['args'] = ['store','--grpc-address=0.0.0.0:'+str(gateway['ports'][0]['port']),'--http-address=0.0.0.0'+str(gateway['ports'][1]['port']),'--data-dir=/tmp/thanos/store','--objstore.config-file=/etc/thanos/bucket_config.yaml']
+gateway['args'] = ['store','--grpc-address=0.0.0.0:'+str(gateway['ports'][0]['port']),'--http-address=0.0.0.0:'+str(gateway['ports'][1]['port']),'--data-dir=/tmp/thanos/store','--objstore.config-file=/etc/thanos/bucket_config.yaml']
 gateway['mounts'] = [{"name": "sidecar-bucket-config","mountPath":"/etc/thanos/bucket_config.yaml","subPath":"bucket_config.yaml"}]
 gateway['volumes'] = [{'name':'sidecar-bucket-config','configMap':{'name':'configmap-bucket','key':'bucket_config.yaml','path':'bucket_config.yaml'}}]
 gateway['env'] = {}
+#thanos compactor 
+compactor = {'image':'quay.io/thanos/thanos:v0.10.0','ports': thanos_ports}
+compactor['env'] = {}
+compactor['mounts'] = [{"name": "sidecar-bucket-config","mountPath":"/etc/thanos/bucket_config.yaml","subPath":"bucket_config.yaml"}]
+compactor['volumes'] = [{'name':'sidecar-bucket-config','configMap':{'name':'configmap-bucket','key':'bucket_config.yaml','path':'bucket_config.yaml'}}]
+compactor['args'] = ['compact','--log.level=debug','--data-dir=/data','--objstore.config-file=/etc/thanos/bucket_config.yaml','--wait']
 #PrometheusBeat config 
 prometheusbeat = {'image': 'jdtotow/prometheusbeat','ports': [{'port':55679,'name':'master'},{'port':55680,'name':'secondary'}]}
 prometheusbeat['env'] = {"PROMETHEUS_URL_API":querier_url,"RABBITMQ_PORT": rabbitmq_ports[0]['port'],"EXPORTER_URL":"http://localhost:55679","METRICS_SOURCE":"manager,qos,optimizer,prometheusbeat,outapi,rabbitmq,pushgateway,exporter","RABBITMQ_HOST":rabbitmq_hostname,"SLEEP":0.1,"COMPONENTNAME":"prometheusbeat","UPDATEMETRICSLISTNAMEPERIOD":32,"EXPORTERPORT":55679,"DEPLOYMENT":"primary"}
@@ -124,7 +132,13 @@ qos = {'image':'jdtotow/qos','ports': [{'port':55682,'name':'qos'}]}
 qos['env'] = {"RABBITMQHOSTNAME":rabbitmq_hostname,"CONFIGFILEPATH":"/config","EXPORTERPORT":55682,"EXPORTER_URL":"http://qos:55682"}
 qos['mounts'] = [{"name": "qos-config-file-volume","mountPath":"/config/config.json","subPath":"config.json"}]
 qos['volumes'] = [{'name':'qos-config-file-volume','configMap':{'name':'configmap-qos','key':'config.json','path':'config.json'}}]
-
+#minio
+minio = {'image': 'minio/minio:RELEASE.2020-01-03T19-12-21Z', 'ports': minio_ports}
+minio['args'] = ['-c','mkdir -p /data/thanos-bucket && /usr/bin/minio server /data']
+minio['env'] = {'MINIO_ACCESS_KEY':'smth','MINIO_SECRET_KEY':'Need8Chars'}
+minio['mounts'] = [{"name": "minio-volume","mountPath":"/data","subPath":""}]
+minio['volumes'] = [{'name':'minio-volume','persistentVolumeClaim':{'name':'minio-volume-claim'}}]
+minio['initContainers'] = [{"name": "minio-volume-permission-fix","image": "busybox","command": ["/bin/chmod","-R","777","/data"],"volumeMounts": [{"name": "minio-volume","mountPath": "/data"}]}]
 def get_configs():
-    return {'prometheus': prometheus,'gateway':gateway,'sidecar': sidecar,'querier':querier,'prometheusbeat': prometheusbeat,'outapi': outapi,'exporter': exporter,'optimizer': optimizer,'pdp': pdp,'manager': manager,'ml': ml, 'qos': qos, 'mongodb': mongodb,'rabbitmq':rabbitmq,'rabbitmq_exporter': rabbitmq_exporter,'grafana': grafana}
+    return {'prometheus': prometheus,'compactor':compactor,'gateway':gateway,'minio':minio,'sidecar': sidecar,'querier':querier,'prometheusbeat': prometheusbeat,'outapi': outapi,'exporter': exporter,'optimizer': optimizer,'pdp': pdp,'manager': manager,'ml': ml, 'qos': qos, 'mongodb': mongodb,'rabbitmq':rabbitmq,'rabbitmq_exporter': rabbitmq_exporter,'grafana': grafana}
 
