@@ -4,18 +4,29 @@ domain = "svc.cluster.local"
 prometheus_hostname = "prometheus-main."+namespace+"."+domain
 prometheus_port = [{'port':9090,'name':'api'}]
 prometheus_url = "http://" + prometheus_hostname + ":" + str(prometheus_port[0]['port'])
+#///////////////////////////////////////////////////////////////////////////////////////////////
 rabbitmq_hostname = "rabbitmq."+namespace+"."+domain 
 rabbitmq_ports = [{'name':'server','port':5672},{'port':15672,'name':'console'}]
 rabbitmq_url = "http://" + rabbitmq_hostname + ":" + str(rabbitmq_ports[1]['port'])
 rabbitmq_username = "richardm"
 rabbitmq_password = "bigdatastack"
+#///////////////////////////////////////////////////////////////////////////////////////////////
 mongodb_hostname = "mongodb."+namespace+"."+domain
 mongodb_port = [{'port':27017,'name':'mongodb'}]
 mongodb_uri = mongodb_hostname + ":" + str(mongodb_port[0]['port'])
 mongodb_username = "uprc"
 mongodb_password = "bigdatastack"
 mongodb_dbname = "TPME"
+#///////////////////////////////////////////////////////////////////////////////////////////////
 elasticsearch_hostname = "elasticsearch."+namespace+"."+domain
+#///////////////////////////////////////////////////////////////////////////////////////////////
+thanos_ports = [{'port':10091,'name':'grpc'},{'port': 10902,'name':'http'}]
+sidecar_hostname = "sidecar-main."+namespace+"."+domain
+sidecar_url = sidecar_hostname+":"+str(thanos_ports[0]['port'])
+gateway_hostname = "gateway."+namespace+"."+domain
+gateway_url = gateway_hostname+":"+str(thanos_ports[0]['port'])
+querier_url = "querier."+namespace+"."+domain+":"+str(thanos_ports[1]['port'])
+
 
 
 #Prometheus config 
@@ -26,15 +37,27 @@ prometheus['mounts'] = [{"name": "prometheus-config-file-volume","mountPath":"/e
 prometheus['volumes'] = [{'name':'prometheus-config-file-volume','configMap':{'name':'configmap-prometheus','key':'prometheus.yml','path':'prometheus.yml'}},{'name':'config-volume-prometheus','persistentVolumeClaim':{'name': 'prometheus-config-claim'}},{'name':'prometheus-tsdb','persistentVolumeClaim':{'name':'prometheus-tsdb-claim'}}]
 prometheus['initContainers'] = [{"name": "prometheus-config-permission-fix","image": "busybox","command": ["/bin/chmod","-R","777","/config"],"volumeMounts": [{"name": "config-volume-prometheus","mountPath": "/config"}]},{"name": "prometheus-tsdb-permission-fix","image": "busybox","command": ["/bin/chmod","-R","777","/tsdb"],"volumeMounts": [{"name": "prometheus-tsdb","mountPath": "/tsdb"}]}]
 #thanos sidecar
-sidecar = {'image': 'quay.io/thanos/thanos:v0.10.0','ports':[{'port':10091,'name':'grpc'},{'port': 10902,'name':'http'}]}
+sidecar = {'image': 'quay.io/thanos/thanos:v0.10.0','ports':thanos_ports}
 sidecar['args'] = ['sidecar','--tsdb.path=/prometheus','--prometheus.url='+prometheus_url,'--grpc-address=0.0.0.0:'+str(sidecar['ports'][0]['port']),'--http-address=0.0.0.0:'+str(sidecar['ports'][1]['port']),'--objstore.config-file=/etc/thanos/bucket_config.yaml']
 sidecar['mounts'] = [{"name": "sidecar-bucket-config","mountPath":"/etc/thanos/bucket_config.yaml","subPath":"bucket_config.yaml"},{"name":"sidecar-volume-prometheus","mountPath":"/prometheus"}]
 sidecar['volumes'] = [{'name':'sidecar-bucket-config','configMap':{'name':'configmap-bucket','key':'bucket_config.yaml','path':'bucket_config.yaml'}},{'name':'sidecar-volume-prometheus','persistentVolumeClaim':{'name': 'sidecar-prometheus-volume-claim'}}]
 sidecar['initContainers'] = [{"name": "sidecar-prometheus-permission-fix","image": "busybox","command": ["/bin/chmod","-R","777","/config"],"volumeMounts": [{"name": "sidecar-volume-prometheus","mountPath": "/config"}]}]
 sidecar['env'] = {}
+#thanos querier
+querier = {'image':'quay.io/thanos/thanos:v0.10.0','ports': thanos_ports}
+querier['args'] = ['query','--grpc-address=0.0.0.0:'+str(querier['ports'][0]['port']),'--http-address=0.0.0.0:'+str(querier['ports'][1]['port']),'--query.replica-label=replica','--store='+sidecar_url,'--store='+gateway_url]
+querier['mounts'] = []
+querier['volumes'] = []
+querier['env'] = {}
+#thanos gateway 
+gateway = {'image':'quay.io/thanos/thanos:v0.10.0','ports': thanos_ports}
+gateway['args'] = ['store','--grpc-address=0.0.0.0:'+str(gateway['ports'][0]['port']),'--http-address=0.0.0.0'+str(gateway['ports'][1]['port']),'--data-dir=/tmp/thanos/store','--objstore.config-file=/etc/thanos/bucket_config.yaml']
+gateway['mounts'] = [{"name": "sidecar-bucket-config","mountPath":"/etc/thanos/bucket_config.yaml","subPath":"bucket_config.yaml"}]
+gateway['volumes'] = [{'name':'sidecar-bucket-config','configMap':{'name':'configmap-bucket','key':'bucket_config.yaml','path':'bucket_config.yaml'}}]
+gateway['env'] = {}
 #PrometheusBeat config 
 prometheusbeat = {'image': 'jdtotow/prometheusbeat','ports': [{'port':55679,'name':'master'},{'port':55680,'name':'secondary'}]}
-prometheusbeat['env'] = {"PROMETHEUS_URL_API":prometheus_url,"EXPORTER_URL":"http://localhost:55679","METRICS_SOURCE":"manager,qos,optimizer,prometheusbeat,outapi,rabbitmq,pushgateway,exporter","RABBITMQ_HOST":rabbitmq_hostname,"SLEEP":0.1,"COMPONENTNAME":"prometheusbeat","UPDATEMETRICSLISTNAMEPERIOD":32,"EXPORTERPORT":55679,"DEPLOYMENT":"primary"}
+prometheusbeat['env'] = {"PROMETHEUS_URL_API":querier_url,"RABBITMQ_PORT": rabbitmq_ports[0]['port'],"EXPORTER_URL":"http://localhost:55679","METRICS_SOURCE":"manager,qos,optimizer,prometheusbeat,outapi,rabbitmq,pushgateway,exporter","RABBITMQ_HOST":rabbitmq_hostname,"SLEEP":0.1,"COMPONENTNAME":"prometheusbeat","UPDATEMETRICSLISTNAMEPERIOD":32,"EXPORTERPORT":55679,"DEPLOYMENT":"primary"}
 prometheusbeat['mounts'] = []
 prometheusbeat['volumes'] = []
 #outapi
@@ -103,5 +126,5 @@ qos['mounts'] = [{"name": "qos-config-file-volume","mountPath":"/config/config.j
 qos['volumes'] = [{'name':'qos-config-file-volume','configMap':{'name':'configmap-qos','key':'config.json','path':'config.json'}}]
 
 def get_configs():
-    return {'prometheus': prometheus,'sidecar': sidecar,'prometheusbeat': prometheusbeat,'outapi': outapi,'exporter': exporter,'optimizer': optimizer,'pdp': pdp,'manager': manager,'ml': ml, 'qos': qos, 'mongodb': mongodb,'rabbitmq':rabbitmq,'rabbitmq_exporter': rabbitmq_exporter,'grafana': grafana}
+    return {'prometheus': prometheus,'gateway':gateway,'sidecar': sidecar,'querier':querier,'prometheusbeat': prometheusbeat,'outapi': outapi,'exporter': exporter,'optimizer': optimizer,'pdp': pdp,'manager': manager,'ml': ml, 'qos': qos, 'mongodb': mongodb,'rabbitmq':rabbitmq,'rabbitmq_exporter': rabbitmq_exporter,'grafana': grafana}
 

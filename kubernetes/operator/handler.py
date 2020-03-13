@@ -3,8 +3,8 @@ import kopf, kubernetes, yaml, tme_config, time
 configs = tme_config.get_configs()
 dict_properties = {}
 list_config_field = ['image','ports','env','mounts','volumes','args','initContainers']
-list_types = ['prometheus','prometheusbeat','outapi','exporter','optimizer','pdp','manager','ml', 'qos','mongodb','rabbitmq','rabbitmq_exporter','grafana','sidecar']
-list_services = ['prometheus','prometheusbeat','outapi','manager','mongodb','rabbitmq','grafana','sidecar']
+list_types = ['prometheus','prometheusbeat','querier','gateway','outapi','exporter','optimizer','pdp','manager','ml', 'qos','mongodb','rabbitmq','rabbitmq_exporter','grafana','sidecar']
+list_services = ['prometheus','prometheusbeat','outapi','manager','gateway','mongodb','rabbitmq','grafana','sidecar','querier']
 
 class KubeObject():
     def __init__(self, name, creation, _object, _type):
