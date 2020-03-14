@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus-cluster
+  labels:
+    app: prometheus-cluster
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus-cluster
+  template:
+    metadata:
+      labels:
+        app: prometheus-cluster
+    spec:
+      containers:
+      - name: prometheus
+        image: prom/prometheus
+        ports:
+        - containerPort: 9090
+        volumeMounts:
+        - name: config-prometheus
+          mountPath: /etc/prometheus/prometheus.yml 
+          subPath: prometheus.yml 
+      volumes:
+      - name: config-prometheus
+        configMap:
+          name: prometheus-cluster 
