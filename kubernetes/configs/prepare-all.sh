@@ -19,6 +19,7 @@ kubectl create configmap configmap-manager --from-file=../../manager/config.json
 kubectl create configmap configmap-qos --from-file=../../qos/config/config.json 
 kubectl create configmap configmap-pdp --from-file=../../pdp/config/config.json 
 kubectl create configmap configmap-bucket --from-file=../../thanos/thanos/bucket_config.yaml 
+kubectl create configmap prometheus-cluster --from-file=../../cluster/prometheus/prometheus.yml 
 #sleep 20
 #kubectl apply -f deployment/prometheus.yml 
 #kubectl apply -f deployment/grafana.yml 

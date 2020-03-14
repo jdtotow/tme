@@ -60,6 +60,11 @@ scrape_configs:
     # Kubernetes apiserver.  This means it will work if Prometheus is running out of
     # cluster, or can't connect to nodes for some other reason (e.g. because of
     # firewalling).
+    - job_name: prometheus
+      scrape_interval: 12s
+      static_configs:
+      - targets:
+        - localhost:9090
     - job_name: 'kubernetes-nodes'
     
       # Default to scraping over https. If required, just disable this or change to
