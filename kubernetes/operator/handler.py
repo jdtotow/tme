@@ -43,6 +43,9 @@ class Register():
             del self.collector[key]
             return True
         return False 
+    def loadKubeObject(self,name,creation,_object,_type):
+        kube_object = KubeObject(name,creation,_object,_type)
+        self.collector[_type+"-"+name] = kube_object
 
 register = Register()
 
@@ -213,3 +216,11 @@ def delete(body, **kwargs):
     register.removeKubeObject(name,"pod")
     register.removeKubeObject(name,"svc")
     return {'message': msg}
+
+@kopf.on.resume('unipi.gr', 'v1', 'triplemonitoringengines')
+def resume(body, **_): 
+    _date = body["metadata"]["creationTimestamp"]
+    _type = body['spec']['type']
+    register.loadKubeObject(_type,_date,{},"pod")
+    msg = f"Pod loaded into the register by TripleMonitoringEngine {_type}"
+    return {"message": msg}
