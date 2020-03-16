@@ -297,15 +297,39 @@ class QoSHandler():
             requests.post(exporter_url,data=json.dumps(export),headers={'X-Requested-With': 'Python requests', 'Content-type': 'application/json'})
         except Exception as e:
             print(e)
+    def computeApdex(self,_list, threshold, violation_type):
+        n_fast = 0
+        n_sluggish = 0
+        for v in _list:
+            if violation_type == ">":
+                if v < threshold:
+                    n_fast +=1
+                else:
+                    n_sluggish +=1
+            else:
+                if v < threshold:
+                    n_sluggish +=1
+                else:
+                    n_fast +=1
+        if len(_list) == 0:
+            return None 
+        return ((n_fast + (n_sluggish/2))/len(_list))*100
+
     def detectViolation(self,_json, qos):
+        print(_json)
         quantile = float(_json['quantile'])
-        message = None 
+        message = None
+        apdex = None 
         if qos.getType() == ">":
             if quantile > qos.getThreshold():
-                message = {'request':'violation','percentage':_json['percentage'],'metric':_json['metric'],'utilization': self.getUtilizationLevel(quantile,qos),'samples':_json['samples'],'level_of_violation': self.getViolationLevel(quantile,qos.getThreshold()),'type':'>','threshold': qos.getThreshold(),'evaluation': quantile,'start': _json['start'],'stop':_json['stop'],'application': qos.getApplication(),'deployment':qos.getDeployment()}
+                if 'list' in _json:
+                    apdex = self.computeApdex(_json['list'],qos.getThreshold(),qos.getType())
+                message = {'request':'violation','apdex':apdex,'percentage':_json['percentage'],'metric':_json['metric'],'utilization': self.getUtilizationLevel(quantile,qos),'samples':_json['samples'],'level_of_violation': self.getViolationLevel(quantile,qos.getThreshold()),'type':'>','threshold': qos.getThreshold(),'evaluation': quantile,'start': _json['start'],'stop':_json['stop'],'application': qos.getApplication(),'deployment':qos.getDeployment()}
         elif qos.getType() == "<":
             if quantile < qos.getThreshold():
-                message = {'request':'violation','percentage':_json['percentage'],'metric':_json['metric'],'utilization': self.getUtilizationLevel(quantile,qos),'samples':_json['samples'],'level_of_violation': self.getViolationLevel(quantile,qos.getThreshold()),'type':'<','threshold': qos.getThreshold(),'evaluation': quantile,'start': _json['start'],'stop':_json['stop'],'application': qos.getApplication(),'deployment':qos.getDeployment()}
+                if 'list' in _json:
+                    apdex = self.computeApdex(_json['list'],qos.getThreshold(),qos.getType())
+                message = {'request':'violation','apdex':apdex,'percentage':_json['percentage'],'metric':_json['metric'],'utilization': self.getUtilizationLevel(quantile,qos),'samples':_json['samples'],'level_of_violation': self.getViolationLevel(quantile,qos.getThreshold()),'type':'<','threshold': qos.getThreshold(),'evaluation': quantile,'start': _json['start'],'stop':_json['stop'],'application': qos.getApplication(),'deployment':qos.getDeployment()}
         return message
     def checkProactiveViolation(self,value_predicted,qos):
         message = None 

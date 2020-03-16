@@ -76,8 +76,9 @@ outapi['volumes'] = []
 #manager
 manager = {'image':'jdtotow/manager','ports': [{'port':55671,'name':'manager'}]}
 manager['env'] = {"MONGODB_HOST":mongodb_uri,"RABBITMQHOST":rabbitmq_hostname,"URLEXPORTER":"http://localhost:55671","COMPONENTNAME":"manager","NTHREADSCONSUMER":5}
-manager['mounts'] = [{"name": "manager-config-file","mountPath":"/config/config.json","subPath":"config.json"}]
-manager['volumes'] = [{'name':'manager-config-file','configMap':{'name':'configmap-manager','key':'config.json','path':'config.json'}}]
+manager['mounts'] = [{"name":"volume-manager","mountPath":"/config"}]
+manager['volumes'] = [{'name':'volume-manager','persistentVolumeClaim':{'name': 'volume-manager-claim'}}]
+manager['initContainers'] = [{"name": "manager-permission-fix","image": "busybox","command": ["/bin/chmod","-R","777","/data"],"volumeMounts": [{"name": "volume-manager","mountPath": "/data"}]}]
 #exporter
 exporter = {'image':'jdtotow/exporter','ports': [{'port':55684,'name':'exporter'}]}
 exporter['env'] = {"RABBITMQHOSTNAME":rabbitmq_hostname}
@@ -117,8 +118,9 @@ grafana['volumes'] = []
 #pdp
 pdp = {'image':'jdtotow/pdp'}
 pdp['env'] = {"RABBITMQHOSTNAME":rabbitmq_hostname,"CONFIGFILEPATH":"/config","EVALUATIONINTERVAL":60}
-pdp['mounts'] = [{"name": "pdp-config-file-volume","mountPath":"/config/config.json","subPath":"config.json"}]
-pdp['volumes'] = [{'name':'pdp-config-file-volume','configMap':{'name':'configmap-pdp','key':'config.json','path':'config.json'}}]
+pdp['mounts'] = [{"name":"volume-pdp","mountPath":"/config"}]
+pdp['volumes'] = [{'name':'volume-pdp','persistentVolumeClaim':{'name': 'volume-pdp-claim'}}]
+pdp['initContainers'] = [{"name": "pdp-permission-fix","image": "busybox","command": ["/bin/chmod","-R","777","/data"],"volumeMounts": [{"name": "volume-pdp","mountPath": "/data"}]}]
 
 #ml
 ml = {'image':'jdtotow/ml'}
@@ -130,8 +132,10 @@ ml['initContainers'] = [{"name": "ml-volume-permission-fix","image": "busybox","
 #qos
 qos = {'image':'jdtotow/qos','ports': [{'port':55682,'name':'qos'}]}
 qos['env'] = {"RABBITMQHOSTNAME":rabbitmq_hostname,"CONFIGFILEPATH":"/config","EXPORTERPORT":55682,"EXPORTER_URL":"http://qos:55682"}
-qos['mounts'] = [{"name": "qos-config-file-volume","mountPath":"/config/config.json","subPath":"config.json"}]
-qos['volumes'] = [{'name':'qos-config-file-volume','configMap':{'name':'configmap-qos','key':'config.json','path':'config.json'}}]
+qos['mounts'] = [{"name":"volume-qos","mountPath":"/config"}]
+qos['volumes'] = [{'name':'volume-qos','persistentVolumeClaim':{'name': 'volume-qos-claim'}}]
+qos['initContainers'] = [{"name": "qos-permission-fix","image": "busybox","command": ["/bin/chmod","-R","777","/data"],"volumeMounts": [{"name": "volume-qos","mountPath": "/data"}]}]
+
 #minio
 minio = {'image': 'minio/minio:RELEASE.2020-01-03T19-12-21Z', 'ports': minio_ports}
 minio['command'] = ['/bin/sh']
