@@ -18,7 +18,7 @@ scrape_configs:
   scrape_interval: 5s
   static_configs:
   - targets:
-    - grafana:3000
+    - grafana.default.svc.cluster.local:3000
 - job_name: outapi
   scrape_interval: 5s
   static_configs:
@@ -28,7 +28,7 @@ scrape_configs:
   scrape_interval: 5s
   static_configs:
   - targets:
-    - prometheusbeat:55673
+    - prometheusbeat.default.svc.cluster.local:55673
 - job_name: prometheusbeat2
   scrape_interval: 5s
   static_configs:
@@ -43,12 +43,12 @@ scrape_configs:
   scrape_interval: 5s
   static_configs:
   - targets:
-    - qos:55682
+    - qos.default.svc.cluster.local:55682
 - job_name: manager
   scrape_interval: 12s
   static_configs:
   - targets:
-    - manager:55671
+    - manager.default.svc.cluster.local:55671
 - file_sd_configs:
   - files:
     - /etc/prometheus/targets.json
@@ -67,14 +67,9 @@ scrape_configs:
   scrape_interval: 5s
   static_configs:
   - targets:
-    - manager:55683
-- job_name: optimizer
-  scrape_interval: 5s
-  static_configs:
-  - targets:
-    - optimizer:55674
+    - manager.default.svc.cluster.local:55683
 - job_name: exporter
   scrape_interval: 20s
   static_configs:
   - targets:
-    - exporter:55684
+    - exporter.default.svc.cluster.local:55684
