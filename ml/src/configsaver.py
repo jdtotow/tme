@@ -29,8 +29,14 @@ class ConfigSaver():
         return key in self.current_config
 
     def checkPreviousConfig(self):
-        _file = open(config_file_path+'/config.json','r')
-        _content = _file.read()
+        _file = None 
+        _content = ""
+        try:
+            _file = open(config_file_path+'/config.json','r')
+        except:
+            pass 
+        if _file != None:
+            _content = _file.read()
         if _content == "":
             self.current_config = {}
         else:
