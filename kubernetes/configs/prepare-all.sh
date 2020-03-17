@@ -34,12 +34,12 @@ sleep 30
 kubectl apply -f deployment/querier.yaml 
 kubectl apply -f deployment/compactor.yaml 
 kubectl apply -f deployment/gateway.yaml 
-sleep 20  
-kubectl apply -f deployment/prometheusbeat.yaml 
-kubectl apply -f deployment/manager.yaml 
-sleep 30
-kubectl apply -f deployment/exporter.yaml 
-kubectl apply -f deployment/qos.yaml 
-kubectl apply -f deployment/pdp.yml 
-kubectl apply -f deployment/grafana.yaml
-kubectl apply -f deployment/ml.yaml 
+#sleep 20  
+#kubectl apply -f deployment/prometheusbeat.yaml 
+#kubectl apply -f deployment/manager.yaml 
+#sleep 30
+#kubectl apply -f deployment/exporter.yaml 
+#kubectl apply -f deployment/qos.yaml 
+#kubectl apply -f deployment/pdp.yml 
+#kubectl apply -f deployment/grafana.yaml
+#kubectl apply -f deployment/ml.yaml 
