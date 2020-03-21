@@ -1,0 +1,63 @@
+{
+    "pods":[
+        {
+            "type": "prometheus",
+            "name": "prometheus-sidecar",
+            "containers": ["prometheus","sidecar"],
+            "services": ["sidecar"]
+        },
+        {
+            "name": "querier",
+            "type": "querier",
+            "containers": ["querier"],
+            "services": ["querier"]
+        },
+        {
+            "name": "minio-compactor",
+            "type": "minio",
+            "containers":["minio","compactor"],
+            "services":["minio"]
+        },
+        {
+            "name": "rabbitmq",
+            "type": "rabbitmq",
+            "containers": ["rabbitmq"],
+            "services": ["rabbitmq"]
+        },
+        {
+            "type": "mongodb",
+            "name": "mongodb",
+            "containers": ["mongodb"],
+            "services": ["mongodb"]
+        },
+        {
+            "type": "gateway",
+            "name": "gateway",
+            "containers": "gateway",
+            "services": ["gateway"]
+        },
+        {
+            "type": "prometheusbeat",
+            "name": "prometheusbeat",
+            "containers": ["prometheusbeat"],
+            "services": ["prometheusbeat"]
+        },
+        {
+            "type": "manager",
+            "name": "manager",
+            "containers": ["manager"],
+            "services": ["manager"]
+        },
+        {
+            "type": "qos",
+            "name": "qos",
+            "containers": ["qos"],
+            "services": ["qos"]
+        },
+        {
+            "type": "expoter",
+            "name": "exporter",
+            "containers": ["exporter"]
+        }
+    ]
+}

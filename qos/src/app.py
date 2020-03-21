@@ -4,6 +4,8 @@ import panda as pd
 from threading import Thread 
 from configsaver import ConfigSaver
 from publisher import ThreadPublisher 
+from dateutil.parser import parse
+import numpy as np 
 
 n_tries = int(os.environ.get("NTRIES","10"))
 username = os.environ.get("RABBITMQUSERNAME","richardm")
@@ -19,6 +21,7 @@ outliers_threshold = int(os.environ.get("OUTLIERTHRESHOLD","3"))
 
 max_data_points = int(os.environ.get("MAXDATAPOINTS","1000"))
 exporter_url = os.environ.get("EXPORTER_URL","localhost:55682")
+MOVING_WINDOW_STEPS = int(os.environ.get("MOVING_WINDOW_STEPS","1"))
 
 push_channel = None 
 push_connexion = None 
@@ -69,6 +72,29 @@ class RabbitMQ():
         self.request.setData(body)
         self.channel.basic_ack(method.delivery_tag)
 
+class TimeSerie():
+    def __init__(self, name):
+        self.name = name 
+        self.data_points = {}
+    def addDataPoint(self,data_point):
+        self.data_points[data_point.getTime()] = data_point 
+    def getDataPoints(self):
+        return self.data_points
+    def deleteDataPoint(self,key):
+        if key in self.data_points:
+            del self.data_points[key]
+            return True 
+        return False 
+
+class DataPoint():
+    def __init__(self, value, _time):
+        self.value = value 
+        self.time = _time 
+    def getValue(self):
+        return self.value 
+    def getTime(self):
+        return self.time 
+
 class QoS():
     def __init__(self,application,deployment,slo,threshold,_type,queue,prediction,under_utilization_threshold,dependencies,percentage,interval):
         self.application = application
@@ -76,6 +102,7 @@ class QoS():
         self.slo = slo 
         self.threshold = threshold
         self.type = _type 
+        self.moving_window_step = MOVING_WINDOW_STEPS
         self.queue = queue 
         self.prediction = prediction
         self.percentage = percentage
@@ -83,6 +110,11 @@ class QoS():
         self.under_utilization_threshold = under_utilization_threshold
         self.interval = interval 
         self.target = None 
+        self.time_series =  TimeSerie(application)
+    def addDataPoint(self,data_point):
+        self.time_series.addDataPoint(data_point)
+    def getTimeSeries(self):
+        return self.time_series
     def setTargetElement(self,target):
         self.target = target 
     def getTargetElement(self):
@@ -109,7 +141,31 @@ class QoS():
         return self.percentage
     def getInterval(self):
         return self.interval 
-    
+    def getTimeSeriesValuesAndTimes(self):
+        data_points = self.time_series.getDataPoints()
+        _times = []
+        for _time in data_points.keys():
+            _times.append(_time)
+        if _times == []:
+            return None 
+        _times.sort()
+        if _times[-1] - _times[0] < self.interval:
+            return None 
+        values = []
+        for _time in _times:
+            values.append(data_points[_time].getValue())
+        return {"values": values, "time": _times} 
+    def moveWindow(self):
+        data_points = self.time_series.getDataPoints()
+        _times = []
+        for _time in data_points.keys():
+            _times.append(_time)
+        if _times == []:
+            return None 
+        _times.sort()
+        for i in range(self.moving_window_step):
+            self.time_series.deleteDataPoint(_times[0])
+        return True  
 
 class QoSManager():
     def __init__(self):
@@ -123,7 +179,8 @@ class QoSManager():
             qos = QoS(application,deployment,slo,threshold,_type,queue,prediction,under_utilization_threshold,dependencies,percentage,interval)
             self.qos_list.append(qos)
             print("QoS objectives added ")
-            self.sendSubscriptionRequest(qos)
+            #self.sendSubscriptionRequest(qos)
+            self.sendSubscriptionRequest2(qos)
             return True 
         else:
             return False 
@@ -161,6 +218,22 @@ class QoSManager():
         message = {'application': qos.getApplication(),'deployment': qos.getDeployment(),'request':'remove_application'}
         self.rabbitmq.sendToClient(pdp_queue_name,json.dumps(message))
         self.config.remove(qos.getApplication()+"_"+qos.getDeployment()+"_"+qos.getSLO())
+    def sendSubscriptionRequest2(self,qos):
+        message = {}
+        message['request'] = 'subscription'
+        data = {}
+        data['name'] = 'qos_subs_'+ qos.getApplication()
+        data['queue'] = queue_name
+        data['heartbeat_interval'] = 0
+        metrics = []
+        metric = {}
+        metric['name'] = qos.getSLO()
+        metric['on_change_only'] = False
+        metric['labels'] = {'application':qos.getApplication()}
+        metrics.append(metric)
+        data['metrics'] = metrics
+        message['data'] = data
+        self.rabbitmq.sendToClient(manager_queue_name,json.dumps(message))
     def sendSubscriptionRequest(self, qos):
         request = {}
         request['request'] = 'qos_start'
@@ -221,6 +294,8 @@ class QoSHandler():
                 self.sendPongRequest()
             elif _json['request'] == "remove_qos":
                 self.removeQoS(_json)
+            elif _json['request'] == "stream":
+                self.handleStreamingData(_json)
             else:
                 print(_json)
         else:
@@ -245,7 +320,7 @@ class QoSHandler():
                 print("Field <<"+ field +">> is missing in the data")
                 return False 
         msg = None 
-        if self.manager.addQoS(_json['application'],_json['deployment'],_json['slo'],_json['threshold'],_json['type'],_json['queue'],_json['prediction'],_json['under_utilization_threshold'],_json['dependencies'],_json['percentage'],_json['interval']):
+        if self.manager.addQoS(_json['application'],_json['application'],_json['slo'],_json['threshold'],_json['type'],_json['queue'],_json['prediction'],_json['under_utilization_threshold'],_json['dependencies'],_json['percentage'],_json['interval']):
             if 'target' in _json:
                 self.manager.addTargetElement(_json['application'],_json['deployment'],_json['slo'],_json['target'])
             msg = json.dumps(self.responde('QoS objective defined','success'))  
@@ -313,23 +388,18 @@ class QoSHandler():
                     n_fast +=1
         if len(_list) == 0:
             return None 
-        return ((n_fast + (n_sluggish/2))/len(_list))*100
+        return (float(n_fast + (n_sluggish/2))/len(_list))*100
 
     def detectViolation(self,_json, qos):
-        print(_json)
         quantile = float(_json['quantile'])
         message = None
         apdex = None 
         if qos.getType() == ">":
             if quantile > qos.getThreshold():
-                if 'list' in _json:
-                    apdex = self.computeApdex(_json['list'],qos.getThreshold(),qos.getType())
-                message = {'request':'violation','apdex':apdex,'percentage':_json['percentage'],'metric':_json['metric'],'utilization': self.getUtilizationLevel(quantile,qos),'samples':_json['samples'],'level_of_violation': self.getViolationLevel(quantile,qos.getThreshold()),'type':'>','threshold': qos.getThreshold(),'evaluation': quantile,'start': _json['start'],'stop':_json['stop'],'application': qos.getApplication(),'deployment':qos.getDeployment()}
+                message = {'request':'violation','apdex':_json['apdex'],'percentage':_json['percentage'],'metric':_json['metric'],'utilization': self.getUtilizationLevel(quantile,qos),'samples':_json['samples'],'level_of_violation': self.getViolationLevel(quantile,qos.getThreshold()),'type':'>','threshold': qos.getThreshold(),'evaluation': quantile,'start': _json['start'],'stop':_json['stop'],'application': qos.getApplication(),'deployment':qos.getDeployment()}
         elif qos.getType() == "<":
             if quantile < qos.getThreshold():
-                if 'list' in _json:
-                    apdex = self.computeApdex(_json['list'],qos.getThreshold(),qos.getType())
-                message = {'request':'violation','apdex':apdex,'percentage':_json['percentage'],'metric':_json['metric'],'utilization': self.getUtilizationLevel(quantile,qos),'samples':_json['samples'],'level_of_violation': self.getViolationLevel(quantile,qos.getThreshold()),'type':'<','threshold': qos.getThreshold(),'evaluation': quantile,'start': _json['start'],'stop':_json['stop'],'application': qos.getApplication(),'deployment':qos.getDeployment()}
+                message = {'request':'violation','apdex':_json['apdex'],'percentage':_json['percentage'],'metric':_json['metric'],'utilization': self.getUtilizationLevel(quantile,qos),'samples':_json['samples'],'level_of_violation': self.getViolationLevel(quantile,qos.getThreshold()),'type':'<','threshold': qos.getThreshold(),'evaluation': quantile,'start': _json['start'],'stop':_json['stop'],'application': qos.getApplication(),'deployment':qos.getDeployment()}
         return message
     def checkProactiveViolation(self,value_predicted,qos):
         message = None 
@@ -346,11 +416,58 @@ class QoSHandler():
         message = None 
         if qos.getType() == ">":
             if quantile < qos.getUnderUtilizationThreshold():
-                message = {'request':'under_utilization','percentage':_json['percentage'],'metric':_json['metric'],'utilization': self.getUtilizationLevel(quantile,qos),'samples':_json['samples'],'level_of_violation': self.getViolationLevel(quantile,qos.getUnderUtilizationThreshold()),'type':'>','threshold': qos.getUnderUtilizationThreshold(),'evaluation': quantile,'start': _json['start'],'stop':_json['stop'],'application': qos.getApplication(),'deployment':qos.getDeployment()}
+                message = {'request':'under_utilization','metric':_json['metric'],'utilization': self.getUtilizationLevel(quantile,qos),'samples':_json['samples'],'level_of_violation': self.getViolationLevel(quantile,qos.getUnderUtilizationThreshold()),'type':'>','threshold': qos.getUnderUtilizationThreshold(),'evaluation': quantile,'start': _json['start'],'stop':_json['stop'],'application': qos.getApplication(),'deployment':qos.getDeployment()}
         elif qos.getType() == "<":
             if quantile > qos.getUnderUtilizationThreshold():
-                message = {'request':'under_utilization','percentage':_json['percentage'],'metric':_json['metric'],'utilization': self.getUtilizationLevel(quantile,qos),'samples':_json['samples'],'level_of_violation': self.getViolationLevel(quantile,qos.getUnderUtilizationThreshold()),'type':'<','threshold': qos.getUnderUtilizationThreshold(),'evaluation': quantile,'start': _json['start'],'stop':_json['stop'],'application': qos.getApplication(),'deployment':qos.getDeployment()}
+                message = {'request':'under_utilization','metric':_json['metric'],'utilization': self.getUtilizationLevel(quantile,qos),'samples':_json['samples'],'level_of_violation': self.getViolationLevel(quantile,qos.getUnderUtilizationThreshold()),'type':'<','threshold': qos.getUnderUtilizationThreshold(),'evaluation': quantile,'start': _json['start'],'stop':_json['stop'],'application': qos.getApplication(),'deployment':qos.getDeployment()}
         return message
+    def handleStreamingData(self,_json):
+        application = None 
+        metric_name = None 
+        if 'application' in _json['data']['labels']:
+            application = _json['data']['labels']['application']
+        if application == None:
+            return False 
+        metric_name = _json['data']['name']
+        #converting timez to timestamp
+        t = parse(_json['data']['time'])
+        timestamp = int(time.mktime(t.timetuple()))
+        qos = self.manager.getQoS(application,application,metric_name)
+        if qos == None:
+            print("QoS objectives not defined for application : "+ application)
+            return False
+        data_point = DataPoint(float(_json['data']['value']),timestamp)
+        qos.addDataPoint(data_point)
+        performance_data = self.evaluateApplication(qos)
+        if performance_data == None:
+            return False 
+        result_violation = self.detectViolation(performance_data, qos)
+        if result_violation != None:
+            self.exportMetrics(performance_data['quantile'],performance_data['application'],qos, result_violation['level_of_violation'])
+            self.rabbitmq.sendToClient("",json.dumps(result_violation)) 
+        else:
+            self.exportMetrics(0,performance_data['application'],qos,0)
+            
+        result_under_utilization = self.detectUnderUtilization(performance_data,qos)
+        if result_under_utilization != None:
+            self.rabbitmq.sendToClient("",json.dumps(result_under_utilization))
+        if 'data_points' in performance_data:
+            result_outliers = self.detectOutliers(performance_data,qos)
+            if result_outliers != None:
+                self.rabbitmq.sendToClient("",json.dumps(result_outliers))
+        
+    def evaluateApplication(self,qos):
+        _data = qos.getTimeSeriesValuesAndTimes()
+        if _data == None:
+            return None
+        _values = _data["values"]
+        _times = _data["time"]
+        if _values == None:
+            return None 
+        quantile = np.percentile(np.array(_values),qos.getPercentage(),interpolation='lower')
+        apdex = self.computeApdex(_values,qos.getThreshold(),qos.getType())
+        qos.moveWindow()
+        return {"quantile": quantile,"percentage": qos.getPercentage(),"metric": qos.getSLO(),"apdex": apdex,"samples": len(_values),"start": _times[0], "stop": _times[-1],"data_points": _values,"application": qos.getApplication()}
     def handlePercentile(self,_json):
         required_fields = ['application','metric','quantile','deployment','start','stop']
         for field in required_fields:

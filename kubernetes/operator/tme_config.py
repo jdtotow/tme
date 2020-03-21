@@ -1,3 +1,5 @@
+import json 
+
 #Global settings
 namespace = "default"
 domain = "svc.cluster.local"
@@ -147,4 +149,19 @@ minio['initContainers'] = [{"name": "minio-volume-permission-fix","image": "busy
 
 def get_configs():
     return {'prometheus': prometheus,'compactor':compactor,'gateway':gateway,'minio':minio,'sidecar': sidecar,'querier':querier,'prometheusbeat': prometheusbeat,'outapi': outapi,'exporter': exporter,'optimizer': optimizer,'pdp': pdp,'manager': manager,'ml': ml, 'qos': qos, 'mongodb': mongodb,'rabbitmq':rabbitmq,'rabbitmq_exporter': rabbitmq_exporter,'grafana': grafana}
+
+def loadPlanner():
+    _file = None
+    try:
+        _file = open("/config/planner.json","r")
+    except:
+        raise FileExistsError("Planner file not found")
+    content = _file.read()
+    _json = None 
+    try:
+        _json = json.loads(content)
+    except:
+        raise ValueError("JSON content is not correct")
+    return _json 
+
 
