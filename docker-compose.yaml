@@ -134,7 +134,23 @@ services:
   #    - "./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf"
   #  ports:
   #    - 8089:8089
-
+  logstash:
+    image: docker.elastic.co/logstash/logstash:6.4.3
+    container_name: logstash
+    hostname: logstash
+    networks:
+      - monitoring
+    environment:
+      - "RABBITMQHOST=rabbitmq"
+      - "RABBITMQEXCHANGETYPE=direct"
+      - "RABBITMQQEUEU=export_metrics"
+      - "RABBITMQUSER=richardm"
+      - "RABBITMQPASSWORD=bigdatastack"
+      - "LOGSTASH2HOST=logstash"
+    volumes:
+      - "./logstash/logstash-2.conf:/usr/share/logstash/pipeline/logstash.conf"
+    ports:
+      - 8081:8081
   qos:
     image: jdtotow/qos
     hostname: qos 
@@ -182,6 +198,7 @@ services:
     restart: always 
     environment: 
       - "PUSHGATEWAY=pushgateway:9091"
+      - "LOGSTASHURL=http://logstash:8081"
     ports:
       - 7070:7070
 

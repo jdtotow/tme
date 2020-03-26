@@ -24,7 +24,7 @@ up_period = 10
 down_period = 30
 
 def high():
-    _size = 1000
+    _size = 100
     _start = time.time()
     while True:
         _list = prepareList(_size)
@@ -32,10 +32,10 @@ def high():
         print(str(_size)+" request sent, sleep ...")
         time.sleep(_sleep)
         if time.time() - _start > up_period*60:
-            break 
+            break
 
 def down():
-    _size = 300
+    _size = 30
     _start = time.time()
     while True:
         _list = prepareList(_size)

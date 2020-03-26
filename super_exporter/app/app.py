@@ -32,33 +32,37 @@ app = Flask(__name__)
 
 class Manager():
     def __init__(self):
-        self.username = None 
-        self.password = None 
-        self.host = None 
-        self.port = None 
-        self.queue_name = None 
+        self.username = None
+        self.password = None
+        self.host = None
+        self.port = None
+        self.queue_name = None
     def startConsumerManager(self):
         consumer_manager = MultiThreadConsumerManager(n_consumers,self.username,self.password,self.host,self.port,n_tries,exchange,self.handler,self.queue_name)
         consumer_manager.start()
     def handler(self,data):
-        _json = None 
+        _json = None
         try:
             _json = json.loads(data)
         except Exception as e:
             print("Cannot decode json")
             print(e)
+        if _json == None:
+            return None
+        if type(_json) == type(""):
+            _json = _json[1:-1]
         metrics = _json['metrics']
         labels = _json['labels']
         global super_metric_dict, super_labels_dict
         for k,v in metrics.items():
-            super_metric_dict[k] = v 
+            super_metric_dict[k] = v
         for k,v in labels.items():
             super_labels_dict[k] = v
     def setRabbitMQParameter(self,username,password,host,port,queue_name):
         self.username = username
         self.password = password
-        self.host = host 
-        self.port = port 
+        self.host = host
+        self.port = port
         self.queue_name = queue_name
 
 @app.route('/',methods=['GET','POST'])
@@ -75,7 +79,7 @@ def home():
             labels = _json['labels']
             global super_metric_dict, super_labels_dict
             for k,v in metrics.items():
-                super_metric_dict[k] = v 
+                super_metric_dict[k] = v
             for k,v in labels.items():
                 super_labels_dict[k] = v
             return Response(responder('success','OK'),status=200, mimetype="application/json")
