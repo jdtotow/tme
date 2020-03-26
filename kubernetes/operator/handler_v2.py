@@ -1,10 +1,8 @@
-import kopf, kubernetes, yaml, tme_config, time 
+import kopf, kubernetes, yaml, tme_config, time, os  
 
 configs = tme_config.get_configs()
 dict_properties = {}
 list_config_field = ['image','ports','env','mounts','volumes','args','initContainers','command']
-list_types = ['prometheus','prometheusbeat','querier','gateway','outapi','exporter','optimizer','pdp','manager','ml', 'qos','mongodb','rabbitmq','rabbitmq_exporter','grafana','sidecar','minio','compactor','tme-prometheus']
-list_services = ['prometheus','prometheusbeat','outapi','manager','gateway','mongodb','rabbitmq','grafana','sidecar','querier','minio']
 
 _deploy_type = os.environ.get("DEPLOYMENT_TYPE","ALL")
 _namespace = os.environ.get("NAMESPACE","default")

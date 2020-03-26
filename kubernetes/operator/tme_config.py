@@ -21,6 +21,7 @@ mongodb_password = "bigdatastack"
 mongodb_dbname = "TPME"
 #///////////////////////////////////////////////////////////////////////////////////////////////
 elasticsearch_hostname = "elasticsearch."+namespace+"."+domain
+logstash_hostname = "elasticsearch."+namespace+"."+domain
 #///////////////////////////////////////////////////////////////////////////////////////////////
 thanos_ports = [{'port':10091,'name':'grpc'},{'port': 10902,'name':'http'}]
 sidecar_hostname = "sidecar-main."+namespace+"."+domain
@@ -86,6 +87,12 @@ exporter = {'image':'jdtotow/exporter','ports': [{'port':55684,'name':'exporter'
 exporter['env'] = {"RABBITMQHOSTNAME":rabbitmq_hostname}
 exporter['mounts'] = []
 exporter['volumes'] = []
+
+#logstash
+logstash = {'image':'docker.elastic.co/logstash/logstash:6.4.3','ports': [{'port':8081,'name':'http'}]}
+logstash['env'] = {"RABBITMQHOST":rabbitmq_hostname,"RABBITMQEXCHANGETYPE":"direct","RABBITMQQEUEU":"export_metrics","RABBITMQUSER":rabbitmq_username,"RABBITMQPASSWORD":rabbitmq_password,"LOGSTASH2HOST":logstash_hostname}
+logstash['mounts'] = [{"name": "logstash-config","mountPath":"/usr/share/logstash/pipeline/logstash.conf","subPath":"logstash.conf"}]
+logstash['volumes'] = [{'name':"logstash-config",'configMap':{'name':'configmap-logstash','key':'logstash.conf','path':'logstash.conf'}}]
 
 #rabbitmq-exporter
 rabbitmq_exporter = {'image':'kbudde/rabbitmq-exporter','ports':[{'port':9419,'name':'exporter'}]}

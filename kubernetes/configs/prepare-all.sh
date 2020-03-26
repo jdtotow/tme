@@ -23,6 +23,7 @@ kubectl apply -f deployment/volume-pdp-claim.yaml
 kubectl create configmap configmap-prometheus --from-file=../../prometheus/prometheus.yml
 kubectl create configmap configmap-bucket --from-file=../../thanos/thanos/bucket_config.yaml 
 kubectl create configmap prometheus-cluster --from-file=../../cluster/prometheus/prometheus.yml 
+kubectl create configmap configmap-logstash --from-file=../../logstash/logstash-2.conf 
 sleep 5
 kubectl apply -f deployment/mongodb.yaml 
 kubectl apply -f deployment/minio.yaml 
