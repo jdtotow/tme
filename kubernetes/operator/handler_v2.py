@@ -4,7 +4,7 @@ configs = tme_config.get_configs()
 dict_properties = {}
 list_config_field = ['image','ports','env','mounts','volumes','args','initContainers','command']
 
-_deploy_type = os.environ.get("DEPLOYMENT_TYPE","ALL")
+_deploy_type = os.environ.get("DEPLOYMENT_TYPE","COMPONENT")
 _namespace = os.environ.get("NAMESPACE","default")
 _service_type = os.environ.get("SERVICETYPE","LoadBalancer")
 
@@ -50,15 +50,14 @@ class Register():
         kube_object = KubeObject(name,creation,_object,_type)
         self.collector[_type+"-"+name] = kube_object
 
-register = Register()
-
 class Operator():
     def __init__(self, register):
         self.register = register 
         self.planner = tme_config.loadPlanner()
         self.configs = tme_config.get_configs()
         self.api = kubernetes.client.CoreV1Api()
-    def prepareContainer(self,name):
+        self.namespace = None 
+    def prepareContainer(self,name,_type):
         #name, image,_ports,_args, _env, _mounts, _volumes
         dict_properties = self.loadComponentConfig(name)
         #adding the image
@@ -86,38 +85,69 @@ class Operator():
             container['command'] = _command 
         return container
 
-    def preparePod(self, name, containers):
+    def preparePod(self, name,plan, containers):
+        containers_name = plan['containers']
+        all_volumes = []
+        all_init_containers = []
+        for container_name in containers_name:
+            dict_properties = self.loadComponentConfig(container_name)
+            #preparing volume
+            _volumes = self.prepareVolumes(dict_properties['volumes'])
+            if _volumes != None:
+                all_volumes.extend(_volumes)
+            #fix mount access right
+            if dict_properties['initContainers'] != None:
+                all_init_containers.extend(dict_properties['initContainers'])
+
         pod = {'apiVersion': 'v1', 'metadata': {'name' : name, 'labels': {'app': name}}}
+        containers['volumes'] = all_volumes
+        containers['initContainers'] = all_init_containers
         pod['spec'] = containers
         return pod 
-    def start(self):
+    def getAllTypes(self):
+        _types = []
+        for plan in self.planner["pods"]:
+            _types.append(plan["type"])
+        return _types 
+    def start(self,namespace):
+        self.namespace = namespace
         if _deploy_type == "ALL":
-            pass 
+            _types = self.getAllTypes()
+            for _type in _types:
+                self.deployType(_type)
+                time.sleep(10)
     def getTypePlan(self,_type):
         for plan in self.planner["pods"]:
             if _type == plan["type"]:
                 return plan 
         return None 
-    def createPod(self,pod,namespace,body):
+    def createPod(self,pod,namespace,body,_type):
         try:
             kopf.adopt(pod, owner=body)
             obj = self.api.create_namespaced_pod(namespace, pod) 
+            self.register.createKubeObject(_type,pod,"pod")
             return True 
         except Exception as e:
             raise kopf.HandlerFatalError(e)
-    def createService(self,svc,namespace,body):
+    def createService(self,svc,namespace,body,_type):
         try:
             kopf.adopt(svc, owner=body)
             obj = self.api.create_namespaced_service(namespace, svc) 
+            self.register.createKubeObject(_type,pod,"pod")
+            return True 
         except Exception as e:
             raise kopf.HandlerFatalError(e)
     def deployPrometheusWripper(self, spec, name, namespace, _type, body):
         if self.register.checkObjectName("querier") == None:
             raise kopf.HandlerFatalError(f"Deploy first a querier type")
         #create sidecar pod 
-        name = 'sidebar-'+name 
-        pod = {'apiVersion': 'v1', 'metadata': {'name' : name, 'labels': {'app': name}}}
-        pod['spec'] = self.setPod("sidecar")
+        name = 'sidecar-'+name 
+        #pod = {'apiVersion': 'v1', 'metadata': {'name' : name, 'labels': {'app': name}}}
+        containers = []
+        containers.append(self.prepareContainer('sidecar',_type))
+        containers_wrapper = {'containers': containers}
+        plan = {'containers': ['sidecar']}
+        pod = self.preparePod(name,plan,containers_wrapper)
         #replace prometheus.url value by the provided
         pod['spec']['containers'][0]['args'][2] = '--prometheus.url='+ spec['prometheus']['url']
         #replace mounts and volumes 
@@ -128,23 +158,23 @@ class Operator():
         pod['spec']['initContainers'][0]["volumeMounts"][0]["name"] = spec['volume']['name']
         #creation of a service
         svc = {'apiVersion': 'v1', 'metadata': {'name' : name}, 'spec': { 'selector': {'app': name}, 'type': 'LoadBalancer'}}
-        svc['spec']['ports'] = set_svc(get_config("sidecar",'ports'))
+        svc['spec']['ports'] = self.setSvc(self.getConfig("sidecar",'ports'))
+        
         _new_service_hostname = name+"."+namespace+".svc.cluster.local:"+ str(svc['spec']['ports'][0]['port'])
         kopf.adopt(pod, owner=body)
         kopf.adopt(svc, owner=body)
-        obj = api.create_namespaced_pod(namespace, pod)
-        register.createKubeObject(_type,pod,"pod")
-        obj = api.create_namespaced_service(namespace, svc)
-        register.createKubeObject(_type,svc,"svc")
+        obj = self.api.create_namespaced_pod(namespace, pod)
+        self.register.createKubeObject(_type,pod,"pod")
+        obj = self.api.create_namespaced_service(namespace, svc)
+        self.register.createKubeObject(_type,svc,"svc")
         #adding new service created to the current querier
-        querier_obj = register.getKubeObject("querier","pod").getObject()
-        api.delete_namespaced_pod("querier", namespace)
+        querier_obj = self.register.getKubeObject("querier","pod").getObject()
+        self.api.delete_namespaced_pod("querier", namespace)
         time.sleep(5) #sleep some moment
         #'--store='+sidecar_url
         querier_obj['spec']['containers'][0]['args'].append('--store='+_new_service_hostname)
-        obj = api.create_namespaced_pod(namespace, querier_obj)
-        msg = f"Pod and Service created by TripleMonitoringEngine {name}"
-        return {'message': msg}
+        obj = self.api.create_namespaced_pod(namespace, querier_obj)
+        return f"Pod and Service created by TripleMonitoringEngine {name}"
     def deployType(self,_type, body, namespace):
         plan = self.getTypePlan(_type)
         if plan == None:
@@ -152,30 +182,25 @@ class Operator():
         #making containers
         containers = []
         for container_name in plan["containers"]:
-            containers.append(self.prepareContainer(container_name))
+            containers.append(self.prepareContainer(container_name,_type))
         pod_name = plan["name"]
         containers_wrapper = { 'containers': containers}
-        #preparing volume
-        _volumes = prepareVolumes(dict_properties['volumes'])
-        if _volumes != None:
-            containers_wrapper['volumes'] = _volumes
-        #fix mount access right
-        if dict_properties['initContainers'] != None:
-            containers_wrapper['initContainers'] = dict_properties['initContainers']
-        pod = self.preparePod(pod_name,containers_wrapper)
+        pod = self.preparePod(pod_name,plan,containers_wrapper)
         #pod creation 
-        self.createPod(pod,namespace,body)
+        #self.createPod(pod,namespace,body,_type)
+        svc = None 
+        time.sleep(5)
         if "services" in plan:
             services = plan["services"]
             for service in services:
                 _ports = self.getConfig(service,'ports')
                 if _ports != None:
                     _ports_object = self.setSvc(_ports)
-                    svc = {'apiVersion': 'v1', 'metadata': {'name' : service}, 'spec': { 'selector': {'app': service}, 'type': _service_type}}
+                    svc = {'apiVersion': 'v1', 'metadata': {'name' : service}, 'spec': { 'selector': {'app': pod_name}, 'type': _service_type}}
                     svc['spec']['ports'] = _ports_object
-                    self.createService(svc,namespace,body)
-        msg = f"Object {_type} created in {namespace}"
-        return {"message": msg}
+                    #self.createService(svc,namespace,body,_type)
+        #return f"Object {_type} created in {namespace}"
+        return (pod,svc)
         
     def loadComponentConfig(self,component):
         component_config = {}
@@ -234,83 +259,29 @@ class Operator():
                     kopf.HandlerFatalError(f"Volume declaration not recognized")
                 result.append(volume)
             return result 
-    
+
+register = Register()
+operator = Operator(register)
+
 @kopf.on.create('unipi.gr', 'v1', 'triplemonitoringengines')
 def create_fn(body, spec, **kwargs):
     # Get info from Database object
     name = body['metadata']['name']
     namespace = body['metadata']['namespace']
     _type = spec['type']
-    # Make sure type is provided
-    if not _type:
-        raise kopf.HandlerFatalError(f"Type must be set. Got {_type}.")
-    # Object used to communicate with the API Server
+    msg = None 
     api = kubernetes.client.CoreV1Api()
-    # check tme-prometheus type
     if _type == "tme-prometheus":
-        if register.checkObjectName("querier") == None:
-            raise kopf.HandlerFatalError(f"Deploy first a querier type")
-        #create sidecar pod 
-        name = 'sidebar-'+name 
-        pod = {'apiVersion': 'v1', 'metadata': {'name' : name, 'labels': {'app': name}}}
-        pod['spec'] = set_pod("sidecar")
-        #replace prometheus.url value by the provided
-        pod['spec']['containers'][0]['args'][2] = '--prometheus.url='+ spec['prometheus']['url']
-        #replace mounts and volumes 
-        # mounts {"name":"sidecar-volume-prometheus","mountPath":"/prometheus"}
-        # volumes {'name':'sidecar-volume-prometheus','persistentVolumeClaim':{'name': 'sidecar-prometheus-volume-claim'}}
-        pod['spec']['containers'][0]['volumeMounts'][1] = {"name": spec['volume']['name'], "mountPath":"/prometheus"}
-        pod['spec']['volumes'][1] = {"name": spec['volume']['name'],'persistentVolumeClaim':{'claimName': spec['volume']['claim_name']}}
-        pod['spec']['initContainers'][0]["volumeMounts"][0]["name"] = spec['volume']['name']
-        #creation of a service
-        svc = {'apiVersion': 'v1', 'metadata': {'name' : name}, 'spec': { 'selector': {'app': name}, 'type': 'LoadBalancer'}}
-        svc['spec']['ports'] = set_svc(get_config("sidecar",'ports'))
-        _new_service_hostname = name+"."+namespace+".svc.cluster.local:"+ str(svc['spec']['ports'][0]['port'])
+        msg = operator.deployPrometheusWripper(spec,name,namespace,_type,body)
+    else:
+        (pod,svc) = operator.deployType(_type,body,namespace)
         kopf.adopt(pod, owner=body)
-        kopf.adopt(svc, owner=body)
-        obj = api.create_namespaced_pod(namespace, pod)
-        register.createKubeObject(_type,pod,"pod")
-        obj = api.create_namespaced_service(namespace, svc)
-        register.createKubeObject(_type,svc,"svc")
-        #adding new service created to the current querier
-        querier_obj = register.getKubeObject("querier","pod").getObject()
-        api.delete_namespaced_pod("querier", namespace)
-        time.sleep(5) #sleep some moment
-        #'--store='+sidecar_url
-        querier_obj['spec']['containers'][0]['args'].append('--store='+_new_service_hostname)
-        obj = api.create_namespaced_pod(namespace, querier_obj)
-        msg = f"Pod and Service created by TripleMonitoringEngine {name}"
-        return {'message': msg}
-
-    # Pod template
-    pod = {'apiVersion': 'v1', 'metadata': {'name' : name, 'labels': {'app': name}}}
-    if not _type in list_types:
-        raise kopf.HandlerFatalError(f"Type {_type} is not TripleMonitoringEngine type")
-    svc = None 
-    if _type in list_services:
-        # Service template
-        svc = {'apiVersion': 'v1', 'metadata': {'name' : name}, 'spec': { 'selector': {'app': name}, 'type': 'LoadBalancer'}}
-        svc['spec']['ports'] = set_svc(get_config(_type,'ports'))
-
-    pod['spec'] = set_pod(_type)
-    # Make the Pod and Service the children of the TripleMonitoringEngine object
-    kopf.adopt(pod, owner=body)
-    if svc != None and svc['spec']['ports'] != []:
-        kopf.adopt(svc, owner=body)
-
-    # Create Pod
-    obj = api.create_namespaced_pod(namespace, pod)
-    register.createKubeObject(_type,pod,"pod")
-    print(f"Pod {obj.metadata.name} created")
-    # Create Service
-    if svc != None and svc['spec']['ports'] != []:
-        obj = api.create_namespaced_service(namespace, svc)
-        register.createKubeObject(_type,svc,"svc")
-        print(f"NodePort Service {obj.metadata.name} created, exposing on port {obj.spec.ports[0].node_port}")
-    # Update status
-
-    msg = f"Pod and Service created by TripleMonitoringEngine {name}"
-    return {'message': msg}
+        obj = api.create_namespaced_pod(namespace, pod) 
+        if svc != None:
+            kopf.adopt(svc,owner=body)
+            obj = api.create_namespaced_service(namespace,svc)
+    return {"message": "Object created"}
+        
 
 @kopf.on.delete('unipi.gr', 'v1', 'triplemonitoringengines')
 def delete(body, **kwargs):
@@ -325,5 +296,6 @@ def resume(body, **_):
     _date = body["metadata"]["creationTimestamp"]
     _type = body['spec']['type']
     register.loadKubeObject(_type,_date,{},"pod")
+    operator.start(body['metadata']['namespace'])
     msg = f"Pod loaded into the register by TripleMonitoringEngine {_type}"
     return {"message": msg}

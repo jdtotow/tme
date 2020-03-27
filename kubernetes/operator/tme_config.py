@@ -92,7 +92,7 @@ exporter['volumes'] = []
 logstash = {'image':'docker.elastic.co/logstash/logstash:6.4.3','ports': [{'port':8081,'name':'http'}]}
 logstash['env'] = {"RABBITMQHOST":rabbitmq_hostname,"RABBITMQEXCHANGETYPE":"direct","RABBITMQQEUEU":"export_metrics","RABBITMQUSER":rabbitmq_username,"RABBITMQPASSWORD":rabbitmq_password,"LOGSTASH2HOST":logstash_hostname}
 logstash['mounts'] = [{"name": "logstash-config","mountPath":"/usr/share/logstash/pipeline/logstash.conf","subPath":"logstash.conf"}]
-logstash['volumes'] = [{'name':"logstash-config",'configMap':{'name':'configmap-logstash','key':'logstash.conf','path':'logstash.conf'}}]
+logstash['volumes'] = [{'name':"logstash-config",'configMap':{'name':'configmap-logstash','key':'logstash-2.conf','path':'logstash.conf'}}]
 
 #rabbitmq-exporter
 rabbitmq_exporter = {'image':'kbudde/rabbitmq-exporter','ports':[{'port':9419,'name':'exporter'}]}
@@ -155,7 +155,7 @@ minio['volumes'] = [{'name':'minio-volume','persistentVolumeClaim':{'name':'mini
 minio['initContainers'] = [{"name": "minio-volume-permission-fix","image": "busybox","command": ["/bin/chmod","-R","777","/data"],"volumeMounts": [{"name": "minio-volume","mountPath": "/data"}]}]
 
 def get_configs():
-    return {'prometheus': prometheus,'compactor':compactor,'gateway':gateway,'minio':minio,'sidecar': sidecar,'querier':querier,'prometheusbeat': prometheusbeat,'outapi': outapi,'exporter': exporter,'optimizer': optimizer,'pdp': pdp,'manager': manager,'ml': ml, 'qos': qos, 'mongodb': mongodb,'rabbitmq':rabbitmq,'rabbitmq_exporter': rabbitmq_exporter,'grafana': grafana}
+    return {'prometheus': prometheus,'compactor':compactor,'gateway':gateway,'minio':minio,'sidecar': sidecar,'querier':querier,'prometheusbeat': prometheusbeat,'outapi': outapi,'exporter': exporter,'optimizer': optimizer,'pdp': pdp,'manager': manager,'ml': ml, 'qos': qos, 'mongodb': mongodb,'rabbitmq':rabbitmq,'rabbitmq_exporter': rabbitmq_exporter,'grafana': grafana,'logstash': logstash}
 
 def loadPlanner():
     _file = None

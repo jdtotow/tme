@@ -154,7 +154,7 @@ def create_fn(body, spec, **kwargs):
         if register.checkObjectName("querier") == None:
             raise kopf.HandlerFatalError(f"Deploy first a querier type")
         #create sidecar pod 
-        name = 'sidebar-'+name 
+        name = 'sidecar-'+name 
         pod = {'apiVersion': 'v1', 'metadata': {'name' : name, 'labels': {'app': name}}}
         pod['spec'] = set_pod("sidecar")
         #replace prometheus.url value by the provided

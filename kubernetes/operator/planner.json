@@ -55,8 +55,8 @@
             "services": ["qos"]
         },
         {
-            "type": "expoter",
-            "name": "exporter",
+            "type": "exporter",
+            "name": "exporter-logstash",
             "containers": ["exporter","logstash"],
             "services":["logstash"]
         }
