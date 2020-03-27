@@ -3,7 +3,7 @@ import json
 #Global settings
 namespace = "default"
 domain = "svc.cluster.local"
-prometheus_hostname = "prometheus-main."+namespace+"."+domain
+prometheus_hostname = "localhost" #"prometheus-main."+namespace+"."+domain
 prometheus_port = [{'port':9090,'name':'api'}]
 prometheus_url = "http://" + prometheus_hostname + ":" + str(prometheus_port[0]['port'])
 #///////////////////////////////////////////////////////////////////////////////////////////////
@@ -24,7 +24,7 @@ elasticsearch_hostname = "elasticsearch."+namespace+"."+domain
 logstash_hostname = "elasticsearch."+namespace+"."+domain
 #///////////////////////////////////////////////////////////////////////////////////////////////
 thanos_ports = [{'port':10091,'name':'grpc'},{'port': 10902,'name':'http'}]
-sidecar_hostname = "sidecar-main."+namespace+"."+domain
+sidecar_hostname = "sidecar."+namespace+"."+domain
 sidecar_url = sidecar_hostname+":"+str(thanos_ports[0]['port'])
 gateway_hostname = "gateway."+namespace+"."+domain
 gateway_url = gateway_hostname+":"+str(thanos_ports[0]['port'])

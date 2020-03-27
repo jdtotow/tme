@@ -33,7 +33,7 @@
         {
             "type": "gateway",
             "name": "gateway",
-            "containers": "gateway",
+            "containers": ["gateway"],
             "services": ["gateway"]
         },
         {
@@ -59,6 +59,12 @@
             "name": "exporter-logstash",
             "containers": ["exporter","logstash"],
             "services":["logstash"]
+        },
+        {
+            "type": "grafana",
+            "name": "grafana",
+            "containers": ["grafana"],
+            "services": ["grafana"]
         }
     ]
 }
