@@ -33,58 +33,11 @@ services:
       - "EXPORTER_URL=http://localhost:55673"
       - "METRICS_SOURCE=manager,qos,prometheusbeat,optimizer,prometheus,prometheusbeat2,outapi,node_exporter,rabbitmq,pushgateway,exporter,bigdatastack-users-apps"
       - "RABBITMQ_HOST=rabbitmq"
-      - "SLEEP=5"
+      - "SLEEP=0.1"
       - "COMPONENTNAME=prometheusbeat"
       - "UPDATEMETRICSLISTNAMEPERIOD=30"
       - "HTTP_OUT_URL=http://optimizer:55674/beats"
-
-  prometheusbeat2:
-    image: jdtotow/prometheusbeat
-    hostname: prometheusbeat2
-    restart: always
-    container_name: prometheusbeat2
-    networks:
-      - monitoring
-    ports:
-      - 55679:55679
-    environment:
-      - "PROMETHEUS_URL_API=http://prometheus:9090"
-      - "EXPORTER_URL=http://localhost:55679"
-      - "METRICS_SOURCE=manager,qos,optimizer,prometheusbeat,prometheus,prometheusbeat3,prometheusbeat2,outapi,node_exporter,rabbitmq,pushgateway,exporter,bigdatastack-users-apps"
-      - "RABBITMQ_HOST=rabbitmq"
-      - "SLEEP=5"
-      - "COMPONENTNAME=prometheusbeat-2"
-      - "UPDATEMETRICSLISTNAMEPERIOD=32"
-      - "HTTP_OUT_URL=http://optimizer:55674/beats"
-      - "EXPORTERPORT=55679"
-      - "DEPLOYMENT=secondary"
   
-  exporter:
-    image: jdtotow/exporter
-    container_name: exporter 
-    hostname: exporter 
-    restart: always
-    networks: 
-      - monitoring 
-    ports:
-      - 55684:55684
-    environment: 
-      - "RABBITMQHOSTNAME=rabbitmq" 
-  outapi:
-    image: jdtotow/output:dci
-    container_name: outapi
-    hostname: outapi
-    restart: always
-    networks:
-      - monitoring
-    ports:
-      - 55670:55670
-    environment:
-      - "ELASTICSEARCHHOST=elasticsearch"
-      - "MONGODBHOST=mongodb"
-      - "PROMETHEUS_URL_API=http://prometheus:9090"
-      - "PROCESSINGDELAY=120"
-      - "DEFAULTEND=30"
   rabbitmq-exporter:
     image: kbudde/rabbitmq-exporter
     container_name: rabbitmq-exporter
@@ -124,23 +77,7 @@ services:
   #    - "./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf"
   #  ports:
   #    - 8089:8089
-  logstash:
-    image: docker.elastic.co/logstash/logstash:6.4.3
-    container_name: logstash
-    hostname: logstash
-    networks:
-      - monitoring
-    environment:
-      - "RABBITMQHOST=rabbitmq"
-      - "RABBITMQEXCHANGETYPE=direct"
-      - "RABBITMQQEUEU=export_metrics"
-      - "RABBITMQUSER=richardm"
-      - "RABBITMQPASSWORD=bigdatastack"
-      - "LOGSTASH2HOST=logstash"
-    volumes:
-      - "./logstash/logstash-2.conf:/usr/share/logstash/pipeline/logstash.conf"
-    ports:
-      - 8081:8081
+  
   qos:
     image: jdtotow/qos
     hostname: qos 
@@ -156,29 +93,6 @@ services:
       - "EXPORTERPORT=55682"
       - "EXPORTER_URL=http://qos:55682" 
   
-  pdp:
-    image: jdtotow/pdp
-    hostname: pdp
-    restart: always 
-    container_name: pdp 
-    networks: 
-      - monitoring
-    environment: 
-      - "RABBITMQHOSTNAME=rabbitmq"
-      - "CONFIGFILEPATH=/config"
-      - "EVALUATIONINTERVAL=60"
-  ml:
-    image: jdtotow/ml 
-    hostname: ml 
-    restart: always 
-    container_name: ml 
-    networks:
-      - monitoring
-    volumes: 
-      - "./ml/src/dataset:/dataset"
-    environment: 
-      - "RABBITMQHOST=rabbitmq"
-
   recommender:
     image: jdtotow/recommender 
     hostname: recommender 
@@ -207,7 +121,7 @@ services:
       - "RABBITMQHOST=rabbitmq"
       - "URLEXPORTER=http://localhost:55671"
       - "COMPONENTNAME=manager"
-      - "NTHREADSCONSUMER=1"
+      - "NTHREADSCONSUMER=5"
       - "URLEXPORTERQOS=http://localhost:55683"
 
   rabbitmq:
@@ -220,21 +134,7 @@ services:
       - 5672:5672
       - 5671:5671
       - 15672:15672
-  
-  #mongodb:
-  #  image: mongo
-  #  hostname: mongodb
-  #  container_name: mongodb
-  #  restart: always
-  #  environment:
-  #    - "MONGO_INITDB_ROOT_USERNAME=uprc"
-  #    - "MONGO_INITDB_ROOT_PASSWORD=bigdatastack"
-  #    - "MONGO_INITDB_DATABASE=TPME"
-  #  networks:
-  #    - monitoring
-  #  ports:
-  #    - 27017:27017
-  
+
   grafana:
     image: grafana/grafana
     hostname: grafana

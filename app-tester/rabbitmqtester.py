@@ -40,6 +40,9 @@ def sendHeartbeat():
     channel.basic_publish("","manager",json.dumps(message))
 
 def callback(channel, method, header, body):
+    print(body)
+    channel.basic_ack(method.delivery_tag)
+    """
     _message = None
     if body[0] == "\"":
         _message = str(body)[1:len(body)-1]
@@ -60,7 +63,7 @@ def callback(channel, method, header, body):
         now = datetime.now()
         date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
         print("Metric collected at "+ str(_time)+" , exposed at ->"+ date_time)
-    channel.basic_ack(method.delivery_tag)
+    """
 
 message = {}
 message['request'] = 'subscription'
@@ -79,14 +82,16 @@ metric1['labels'] = {'application':'prometheusbeat'}
 metric2 = {}
 metric2['name'] = "datapoints_prometheus"
 metric2['on_change_only'] = False
+metric2['labels'] = {'application':'prometheusbeat'}
 
 metric3 = {}
 metric3['name'] = "scrape_duration_seconds"
 metric3['on_change_only'] = False
+metric3['labels'] = {'application':'prometheus'}
 
-metrics.append(metric1)
-#metrics.append(metric2)
-#metrics.append(metric3)
+#metrics.append(metric1)
+metrics.append(metric2)
+metrics.append(metric3)
 
 data['metrics'] = metrics
 message['data'] = data

@@ -1,0 +1,19 @@
+input:
+  rabbitmq:
+    host: ${RABBITMQHOST}
+    port: ${RABBITMQPORT}
+    username: ${RABBITMQUSERNAME}
+    password: ${RABBITMQPASSWORD}
+    queue: ${RABBITMQQUEUE}
+  kafka:
+    bootstrap_servers: ${KAFKABOOTSTRAPSERVERS}
+    topic: ${KAFKATOPIC}
+  workers: ${WORKERS}
+exporter:
+  url: ${URLEXPORTER}
+default_heartbeat: ${DEFAULTHEARTBEAT}
+mongodb:
+  dbname: ${MONGODBNAME}
+  username: ${MONGOUSERNAME}
+  password: ${MONGOPASSWORD}
+  host: ${MONGOHOST}

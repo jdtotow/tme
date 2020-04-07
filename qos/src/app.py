@@ -439,6 +439,7 @@ class QoSHandler():
         data_point = DataPoint(float(_json['data']['value']),timestamp)
         qos.addDataPoint(data_point)
         performance_data = self.evaluateApplication(qos)
+        print(performance_data)
         if performance_data == None:
             return False 
         result_violation = self.detectViolation(performance_data, qos)

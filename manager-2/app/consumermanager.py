@@ -53,6 +53,8 @@ class ApplicationSubscription():
                     return True 
                 else:
                     return False 
+        else:
+            return False 
 
 
 class Consumer():
@@ -145,5 +147,7 @@ class ConsumerManager():
                     subs.append(app)
             self.cache[k] = subs
             self.new_subscription_not_cached = False
-        return subs   
+        return subs 
+    def setRabbitMQData(self,data):
+        print(data)  
 
