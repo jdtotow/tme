@@ -18,13 +18,13 @@ def prepareList(_size):
     return result
 
 _sleep = 0.01
-_workers = 50
+_workers = 200
 
 up_period = 10
 down_period = 30
 
 def high():
-    _size = 100
+    _size = 1000
     _start = time.time()
     while True:
         _list = prepareList(_size)
@@ -35,7 +35,7 @@ def high():
             break
 
 def down():
-    _size = 30
+    _size = 3000
     _start = time.time()
     while True:
         _list = prepareList(_size)

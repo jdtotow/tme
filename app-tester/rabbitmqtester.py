@@ -68,7 +68,7 @@ def callback(channel, method, header, body):
 message = {}
 message['request'] = 'subscription'
 data = {}
-data['name'] = 'monitoring-1'
+data['name'] = 'monitoring'
 data['queue'] = queue
 data['heartbeat_interval'] = 40000
 
@@ -89,7 +89,7 @@ metric3['name'] = "scrape_duration_seconds"
 metric3['on_change_only'] = False
 metric3['labels'] = {'application':'prometheus'}
 
-#metrics.append(metric1)
+metrics.append(metric1)
 metrics.append(metric2)
 metrics.append(metric3)
 

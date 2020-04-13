@@ -59,3 +59,8 @@ scrape_configs:
   static_configs:
   - targets:
     - exporter:55684
+- job_name: node_exporter
+  scrape_interval: 5s 
+  static_configs:
+  - targets:
+    - 192.168.1.2:9100

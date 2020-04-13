@@ -31,33 +31,33 @@ services:
     environment:
       - "PROMETHEUS_URL_API=http://prometheus:9090"
       - "EXPORTER_URL=http://localhost:55673"
-      - "METRICS_SOURCE=manager,qos,prometheusbeat,optimizer,prometheus,prometheusbeat2,outapi,node_exporter,rabbitmq,pushgateway,exporter,bigdatastack-users-apps"
       - "RABBITMQ_HOST=rabbitmq"
-      - "SLEEP=5"
+      - "SLEEP=2"
       - "COMPONENTNAME=prometheusbeat"
       - "UPDATEMETRICSLISTNAMEPERIOD=30"
       - "HTTP_OUT_URL=http://optimizer:55674/beats"
-
-  prometheusbeat2:
-    image: jdtotow/prometheusbeat
-    hostname: prometheusbeat2
-    restart: always
-    container_name: prometheusbeat2
-    networks:
-      - monitoring
-    ports:
-      - 55679:55679
-    environment:
-      - "PROMETHEUS_URL_API=http://prometheus:9090"
-      - "EXPORTER_URL=http://localhost:55679"
-      - "METRICS_SOURCE=manager,qos,optimizer,prometheusbeat,prometheus,prometheusbeat3,prometheusbeat2,outapi,node_exporter,rabbitmq,pushgateway,exporter,bigdatastack-users-apps"
-      - "RABBITMQ_HOST=rabbitmq"
-      - "SLEEP=5"
-      - "COMPONENTNAME=prometheusbeat-2"
-      - "UPDATEMETRICSLISTNAMEPERIOD=32"
-      - "HTTP_OUT_URL=http://optimizer:55674/beats"
-      - "EXPORTERPORT=55679"
-      - "DEPLOYMENT=secondary"
+  
+  #prometheusbeat2:
+  #  image: jdtotow/prometheusbeat
+  #  hostname: prometheusbeat2
+  #  restart: always
+  #  container_name: prometheusbeat2
+  #  networks:
+  #    - monitoring
+  #  ports:
+  #    - 55679:55679
+  #  environment:
+  #    - "PROMETHEUS_URL_API=http://prometheus:9090"
+  #    - "EXPORTER_URL=http://localhost:55679"
+  #    - "METRICS_SOURCE=manager,qos,optimizer,prometheusbeat,prometheus,prometheusbeat3,prometheusbeat2,outapi,node_exporter,rabbitmq,pushgateway,exporter,bigdatastack-users-apps"
+  #    - "RABBITMQ_HOST=rabbitmq"
+  #    - "SLEEP=20"
+  #    - "COMPONENTNAME=prometheusbeat-2"
+  #    - "UPDATEMETRICSLISTNAMEPERIOD=32"
+  #    - "HTTP_OUT_URL=http://optimizer:55674/beats"
+  #    - "EXPORTERPORT=55679"
+  #    - "DEPLOYMENT=secondary"
+  
   
   exporter:
     image: jdtotow/exporter

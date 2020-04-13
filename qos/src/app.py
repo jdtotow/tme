@@ -234,6 +234,8 @@ class QoSManager():
         data['metrics'] = metrics
         message['data'] = data
         self.rabbitmq.sendToClient(manager_queue_name,json.dumps(message))
+        if qos.getPrediction():
+            self.sendRequestToPDP(qos.getApplication(),qos.getDeployment(),qos.getSLO(),qos.getDependencies(),qos.getThreshold(),qos.getType(),qos.getUnderUtilizationThreshold())
     def sendSubscriptionRequest(self, qos):
         request = {}
         request['request'] = 'qos_start'
@@ -439,7 +441,6 @@ class QoSHandler():
         data_point = DataPoint(float(_json['data']['value']),timestamp)
         qos.addDataPoint(data_point)
         performance_data = self.evaluateApplication(qos)
-        print(performance_data)
         if performance_data == None:
             return False 
         result_violation = self.detectViolation(performance_data, qos)
