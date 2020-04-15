@@ -27,268 +27,10 @@
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
-        "h": 6,
-        "w": 8,
-        "x": 0,
-        "y": 0
-      },
-      "hiddenSeries": false,
-      "id": 30,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "connected",
-      "options": {
-        "dataLinks": []
-      },
-      "percentage": false,
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "storing_performance",
-          "refId": "A"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Storing performance",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": null,
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 6,
-        "w": 7,
-        "x": 8,
-        "y": 0
-      },
-      "hiddenSeries": false,
-      "id": 26,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "connected",
-      "options": {
-        "dataLinks": []
-      },
-      "percentage": false,
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "metrics_utilization",
-          "refId": "A"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Metrics utilization",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": null,
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 6,
-        "w": 9,
-        "x": 15,
-        "y": 0
-      },
-      "hiddenSeries": false,
-      "id": 28,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "connected",
-      "options": {
-        "dataLinks": []
-      },
-      "percentage": false,
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "scrape_performance",
-          "refId": "A"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Scrape Performance",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": null,
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
         "h": 7,
         "w": 8,
         "x": 0,
-        "y": 6
+        "y": 0
       },
       "hiddenSeries": false,
       "id": 14,
@@ -377,7 +119,7 @@
         "h": 7,
         "w": 8,
         "x": 8,
-        "y": 6
+        "y": 0
       },
       "hiddenSeries": false,
       "id": 18,
@@ -467,7 +209,7 @@
         "h": 7,
         "w": 8,
         "x": 16,
-        "y": 6
+        "y": 0
       },
       "hiddenSeries": false,
       "id": 16,
@@ -556,7 +298,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 13
+        "y": 7
       },
       "hiddenSeries": false,
       "id": 8,
@@ -586,7 +328,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(datapoints_sent{deployment=\"main\"})+sum(datapoints_sent{deployment=\"secondary\"})",
+          "expr": "datapoints_sent{deployment=\"main\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "refId": "A"
@@ -645,7 +387,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 13
+        "y": 7
       },
       "hiddenSeries": false,
       "id": 10,
@@ -734,7 +476,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 21
+        "y": 15
       },
       "hiddenSeries": false,
       "id": 20,
@@ -763,7 +505,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(metrics_prometheus{deployment=\"main\"})+sum(metrics_prometheus{deployment=\"secondary\"})",
+          "expr": "metrics_prometheus{deployment=\"main\"}",
           "refId": "A"
         }
       ],
@@ -820,7 +562,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 21
+        "y": 15
       },
       "hiddenSeries": false,
       "id": 22,
@@ -910,7 +652,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 29
+        "y": 23
       },
       "hiddenSeries": false,
       "id": 24,
@@ -1024,5 +766,5 @@
   "timezone": "",
   "title": "TPME",
   "uid": "MfZ6xGRZk",
-  "version": 7
+  "version": 3
 }

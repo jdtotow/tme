@@ -16,7 +16,7 @@ n_tries = int(os.environ.get("NTRIES","10"))
 ml_consumer_queue_name = os.environ.get("MLCONSUMERQUEUENAME","ml_executor")
 manager_queue_name = os.environ.get("MANAGERQUEUENAME","manager")
 #//////////////////////////////////////////////////////////////////////////////
-_evaluation_interval = int(os.environ.get("EVALUATIONINTERVAL","300"))
+_evaluation_interval = int(os.environ.get("EVALUATIONINTERVAL","600"))
 last_all_applications_list_updated = time.time()
 all_applications_list_update_interval = int(os.environ.get("APPLICATIONSLISTUPDATEINTERVAL","400"))
 baskets_evaluation_period = int(os.environ.get("BASKETEVALUATIONPERIOD","20"))
