@@ -80,7 +80,7 @@ ingestor['volumes'] = []
 #outapi
 outapi = {'image': 'jdtotow/outapi','ports': [{'port':55670,'name':'outapi'}]}
 outapi['env'] = {"ELASTICSEARCHHOST":elasticsearch_hostname,"MONGODBHOST":mongodb_hostname,"PROMETHEUS_URL_API":prometheus_url,"PROCESSINGDELAY":120,"DEFAULTEND":30}
-outapi['resources'] = {"requests": {"memory": "32Mi","cpu": "25m"},"limits": {"memory": "128Mi","cpu": "500m"}}
+outapi['resources'] = {"requests": {"memory": "24Mi","cpu": "25m"},"limits": {"memory": "128Mi","cpu": "500m"}}
 outapi['mounts'] = []
 outapi['volumes'] = []
 #manager
@@ -102,7 +102,7 @@ logstash = {'image':'docker.elastic.co/logstash/logstash:6.4.3','ports': [{'port
 logstash['env'] = {"RABBITMQHOST":rabbitmq_hostname,"RABBITMQEXCHANGETYPE":"direct","RABBITMQQEUEU":"export_metrics","RABBITMQUSER":rabbitmq_username,"RABBITMQPASSWORD":rabbitmq_password,"LOGSTASH2HOST":logstash_hostname}
 logstash['mounts'] = [{"name": "logstash-config","mountPath":"/usr/share/logstash/pipeline/logstash.conf","subPath":"logstash.conf"}]
 logstash['volumes'] = [{'name':"logstash-config",'configMap':{'name':'configmap-logstash','key':'logstash-2.conf','path':'logstash.conf'}}]
-logstash['resources'] = {"requests": {"memory": "64Mi","cpu": "50m"},"limits": {"memory": "256Mi","cpu": "900m"}}
+logstash['resources'] = {"requests": {"memory": "1024Mi","cpu": "50m"},"limits": {"memory": "2048Mi","cpu": "900m"}}
 #rabbitmq-exporter
 rabbitmq_exporter = {'image':'kbudde/rabbitmq-exporter','ports':[{'port':9419,'name':'exporter'}]}
 rabbitmq_exporter['env'] = {"RABBIT_URL":rabbitmq_url,"RABBIT_USER":rabbitmq_username,"RABBIT_PASSWORD":rabbitmq_password}
