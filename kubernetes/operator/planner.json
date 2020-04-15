@@ -37,10 +37,10 @@
             "services": ["gateway"]
         },
         {
-            "type": "prometheusbeat",
-            "name": "prometheusbeat",
-            "containers": ["prometheusbeat"],
-            "services": ["prometheusbeat"]
+            "type": "ingestor",
+            "name": "ingestor",
+            "containers": ["ingestor"],
+            "services": ["ingestor"]
         },
         {
             "type": "manager",

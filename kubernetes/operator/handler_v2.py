@@ -2,11 +2,11 @@ import kopf, kubernetes, yaml, tme_config, time, os
 
 configs = tme_config.get_configs()
 dict_properties = {}
-list_config_field = ['image','ports','env','mounts','volumes','args','initContainers','command']
+list_config_field = ['image','ports','env','mounts','volumes','args','initContainers','command','resources']
 
 _deploy_type = os.environ.get("DEPLOYMENT_TYPE","COMPONENT")
 _namespace = os.environ.get("NAMESPACE","default")
-_service_type = os.environ.get("SERVICETYPE","LoadBalancer")
+_service_type = os.environ.get("SERVICETYPE","ClusterIP")
 
 
 class KubeObject():
@@ -67,6 +67,8 @@ class Operator():
         _envs = self.prepareEnvironmentVariable(dict_properties['env'])
         if _envs != None:
             container['env'] = _envs
+        #resource constraint 
+        container['resources'] = self.prepareResourceConstraint(dict_properties['resources'])
         #adding containers port 
         _ports = self.prepareContainerPorts(dict_properties['ports'])
         if _ports != None:
@@ -225,6 +227,10 @@ class Operator():
             return svc 
         return None
     #//////////////////////////////////////////////////////////////////////////////////////
+    def prepareResourceConstraint(self,res):
+        if len(res.keys()) == 0:
+            return {"requests": {"memory": "64Mi","cpu": "250m"},"limits": {"memory": "128Mi","cpu": "500m"}}
+        return res 
     def prepareEnvironmentVariable(self,_envs):
         if _envs == None or len(_envs.keys()) == 0:
             return None 

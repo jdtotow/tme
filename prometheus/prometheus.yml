@@ -12,33 +12,24 @@ scrape_configs:
   scrape_interval: 5s
   static_configs:
   - targets:
-    - grafana:3000
+    - grafana.default.svc.cluster.local:3000
 - job_name: outapi
   scrape_interval: 5s
   static_configs:
   - targets:
-    - outapi:55670
+    - outapi.default.svc.cluster.local:55670
 - job_name: minio
   scrape_interval: 5s
   metrics_path: /minio/prometheus/metrics
+  scheme: http
   static_configs:
   - targets:
-    - minio:9000
-- job_name: prometheusbeat
+    - minio.default.svc.cluster.local:9000
+- job_name: ingestor
   scrape_interval: 5s
   static_configs:
   - targets:
-    - prometheusbeat:55673
-- job_name: prometheusbeat2
-  scrape_interval: 5s
-  static_configs:
-  - targets:
-    - prometheusbeat2:55679
-- job_name: prometheusbeat3
-  scrape_interval: 5s
-  static_configs:
-  - targets:
-    - prometheusbeat3:55689
+    - ingestor.default.svc.cluster.local:55673
 - job_name: qos
   scrape_interval: 5s
   static_configs:
@@ -48,7 +39,7 @@ scrape_configs:
   scrape_interval: 12s
   static_configs:
   - targets:
-    - manager:55671
+    - manager.default.svc.cluster.local:55671
 - job_name: rabbitmq
   scrape_interval: 20s
   static_configs:
@@ -58,9 +49,4 @@ scrape_configs:
   scrape_interval: 20s
   static_configs:
   - targets:
-    - exporter:55684
-- job_name: node_exporter
-  scrape_interval: 5s 
-  static_configs:
-  - targets:
-    - 192.168.1.2:9100
+    - exporter.default.svc.cluster.local:55684

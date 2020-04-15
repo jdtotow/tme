@@ -1,6 +1,6 @@
 apiVersion: unipi.gr/v1
 kind: TripleMonitoringEngine
 metadata:
-  name: prometheusbeat
+  name: ingestor
 spec:
-  type: prometheusbeat 
+  type: ingestor 
