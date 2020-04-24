@@ -51,7 +51,8 @@ class ConfigSaver():
                 print("No previous config found")
                 return None
             self.handler.setPreviousConfig(self.current_config)
-        _file.close()
+        if _file != None:
+            _file.close()
     def setConfig(self, key,value):
         self.current_config[key] = value 
         self.save()
