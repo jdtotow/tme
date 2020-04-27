@@ -75,6 +75,8 @@ compactor['resources'] = {"requests": {"memory": "32Mi","cpu": "25m"},"limits": 
 ingestor = {'image': 'jdtotow/prometheusbeat','ports': [{'port':55679,'name':'master'},{'port':55680,'name':'secondary'}]}
 ingestor['env'] = {"PROMETHEUS_URL_API":querier_url,"RABBITMQ_PORT": rabbitmq_ports[0]['port'],"EXPORTER_URL":"http://localhost:55679","RABBITMQ_HOST":rabbitmq_hostname,"SLEEP":5,"COMPONENTNAME":"ingestor","UPDATEMETRICSLISTNAMEPERIOD":32,"EXPORTERPORT":55679,"DEPLOYMENT":"primary"}
 ingestor['resources'] = {"requests": {"memory": "64Mi","cpu": "50m"},"limits": {"memory": "128Mi","cpu": "500m"}}
+ingestor['liveness'] = {"path":"/liveness","port": 55679}
+ingestor['readyness'] = {"path":"/readyness","port": 55679}
 ingestor['mounts'] = []
 ingestor['volumes'] = []
 #outapi
@@ -90,6 +92,8 @@ manager['mounts'] = [{"name":"volume-manager","mountPath":"/config"}]
 manager['volumes'] = [{'name':'volume-manager','persistentVolumeClaim':{'name': 'volume-manager-claim'}}]
 manager['initContainers'] = [{"name": "manager-permission-fix","image": "busybox","command": ["/bin/chmod","-R","777","/data"],"volumeMounts": [{"name": "volume-manager","mountPath": "/data"}]}]
 manager['resources'] = {"requests": {"memory": "24Mi","cpu": "25m"},"limits": {"memory": "128Mi","cpu": "500m"}}
+manager['liveness'] = {"path":"/liveness","port": 55671}
+manager['readyness'] = {"path":"/readyness","port": 55671}
 #exporter
 exporter = {'image':'jdtotow/exporter','ports': [{'port':55684,'name':'exporter'}]}
 exporter['resources'] = {"requests": {"memory": "24Mi","cpu": "25m"},"limits": {"memory": "128Mi","cpu": "500m"}}

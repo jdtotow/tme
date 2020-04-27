@@ -2,7 +2,7 @@ import kopf, kubernetes, yaml, tme_config, time, os
 
 configs = tme_config.get_configs()
 dict_properties = {}
-list_config_field = ['image','ports','env','mounts','volumes','args','initContainers','command','resources']
+list_config_field = ['image','ports','env','mounts','volumes','args','initContainers','command','resources','liveness','readyness']
 
 _deploy_type = os.environ.get("DEPLOYMENT_TYPE","COMPONENT")
 _namespace = os.environ.get("NAMESPACE","default")
@@ -62,7 +62,6 @@ class Operator():
         dict_properties = self.loadComponentConfig(name)
         #adding the image
         container = { 'image': dict_properties['image'], 'name': name}
-        pod = { 'containers': [ { 'image': dict_properties['image'], 'name': _type}]}
         #adding environment variables
         _envs = self.prepareEnvironmentVariable(dict_properties['env'])
         if _envs != None:
@@ -85,6 +84,13 @@ class Operator():
         _command = dict_properties['command']
         if _command != None:
             container['command'] = _command 
+        #liveness 
+        _liveness = dict_properties['liveness']
+        if _liveness != None:
+            container['livenessProbe'] = self.prepareLivenessOrReadyness(_liveness)
+        _readyness = dict_properties['readyness']
+        if _readyness != None:
+            container['readynessProbe'] = self.prepareLivenessOrReadyness(_readyness)
         return container
 
     def preparePod(self, name,plan, containers):
@@ -239,6 +245,9 @@ class Operator():
             for k in _envs.keys():
                 result.append({'name': k, 'value': str(_envs[k])})
             return result
+    def prepareLivenessOrReadyness(self,_data):
+        return {"httpGet": {"path": _data["path"],"port": _data["port"]},"initialDelaySeconds": 10,"periodSeconds": 10}
+
     def prepareContainerPorts(self,_ports):
         if _ports == []:
             return None 
