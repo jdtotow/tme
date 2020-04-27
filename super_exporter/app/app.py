@@ -3,6 +3,7 @@ import json, requests, time, os
 from prometheus_client.exposition import CONTENT_TYPE_LATEST, generate_latest
 from prom import Collector, MultiCollector
 from consumermanager import MultiThreadConsumerManager
+from threading import Thread
 
 #////////////////////////////////////////////////////////////////////////////////
 n_tries = int(os.environ.get("NTRIES","10"))
@@ -18,6 +19,10 @@ super_metric_dict = {}
 super_labels_dict = {}
 
 _port = int(os.environ.get("EXPORTERPORT","55684"))
+
+_liveness = False 
+_readyness = False 
+consumer_manager = None 
 
 def responder(status,message):
     response = {}
@@ -38,8 +43,13 @@ class Manager():
         self.port = None
         self.queue_name = None
     def startConsumerManager(self):
+        global _liveness, _readyness, consumer_manager
         consumer_manager = MultiThreadConsumerManager(n_consumers,self.username,self.password,self.host,self.port,n_tries,exchange,self.handler,self.queue_name)
         consumer_manager.start()
+        _liveness = True 
+        _readyness = True
+        thread = Thread(target=self.connectionRoutineCheck,args=())
+        thread.start()
     def handler(self,data):
         _json = None
         try:
@@ -64,6 +74,37 @@ class Manager():
         self.host = host
         self.port = port
         self.queue_name = queue_name
+    def connectionRoutineCheck(self):
+        global _liveness, _readyness
+        while True:
+            if not consumer_manager.threadsStatus():
+                _liveness = False 
+                _readyness = False
+                consumer_manager.stop()
+                print("Restarting all threads")
+                time.sleep(10)
+                consumer_manager.start()
+            else:
+                _liveness = True 
+                _readyness = True 
+            time.sleep(1)
+
+
+@app.route('/liveness',methods=['GET','POST'])
+def liveness():
+    global _liveness
+    if _liveness:
+        return Response('ok',status=200, mimetype="application/json")
+    else:
+        return Response('Manager does not response',status=500, mimetype="application/json")
+
+@app.route('/readyness',methods=['GET','POST'])
+def readyness():
+    global _readyness
+    if _readyness:
+        return Response('ok',status=200, mimetype="application/json") 
+    else:
+        return Response('Manager not ready', status=500,mimetype="application/json")
 
 @app.route('/',methods=['GET','POST'])
 def home():

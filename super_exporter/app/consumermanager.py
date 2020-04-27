@@ -80,10 +80,15 @@ class MultiThreadConsumerManager():
     def stop(self):
         for worker in self.list_workers:
             worker.stop()
-    def checkThreads(self):
+    def restartDeadThreads(self):
         for thread in self.list_workers:
             if not thread.getConnectionState():
                 thread.stop()
-                time.sleep(1)
+                time.sleep(2)
                 thread.start()
+    def threadsStatus(self): 
+        for thread in self.list_workers:
+            if thread.getConnectionState():
+                return True 
+        return False 
             

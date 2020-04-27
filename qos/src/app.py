@@ -281,6 +281,7 @@ class QoSHandler():
     def responde(self,message, status):
         return {'message': message,'status':status}
     def setData(self,data):
+        print(data)
         _json = None 
         try:
             _json = json.loads(data)
