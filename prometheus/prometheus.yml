@@ -1,52 +1,53 @@
 global:
-  scrape_interval: 15s
-  external_labels:
-    replicas: prometheus-main
-scrape_configs:
-- job_name: prometheus
-  scrape_interval: 12s
-  static_configs:
-  - targets:
-    - localhost:9090
-- job_name: grafana
-  scrape_interval: 5s
-  static_configs:
-  - targets:
-    - grafana:3000
-- job_name: outapi
-  scrape_interval: 5s
-  static_configs:
-  - targets:
-    - outapi:55670
-- job_name: minio
-  scrape_interval: 5s
-  metrics_path: /minio/prometheus/metrics
-  scheme: http
-  static_configs:
-  - targets:
-    - minio:9000
-- job_name: ingestor
-  scrape_interval: 5s
-  static_configs:
-  - targets:
-    - ingestor:55673
-- job_name: qos
-  scrape_interval: 5s
-  static_configs:
-  - targets:
-    - qos:55682
-- job_name: manager
-  scrape_interval: 12s
-  static_configs:
-  - targets:
-    - manager:55671
-- job_name: rabbitmq
-  scrape_interval: 20s
-  static_configs:
-  - targets:
-    - rabbitmq-exporter:9419
-- job_name: exporter
-  scrape_interval: 20s
-  static_configs:
-  - targets:
-    - exporter:55684
+    scrape_interval: 15s
+    external_labels:
+      replicas: prometheus-main
+  scrape_configs:
+  - job_name: prometheus
+    scrape_interval: 12s
+    static_configs:
+    - targets:
+      - localhost:9090
+  - job_name: grafana
+    scrape_interval: 5s
+    static_configs:
+    - targets:
+      - grafana.default.svc.cluster.local:3000
+  - job_name: outapi
+    scrape_interval: 5s
+    static_configs:
+    - targets:
+      - outapi.default.svc.cluster.local:55670
+  - job_name: minio
+    scrape_interval: 5s
+    metrics_path: /minio/prometheus/metrics
+    scheme: http
+    static_configs:
+    - targets:
+      - minio.default.svc.cluster.local:9000
+  - job_name: ingestor
+    scrape_interval: 5s
+    static_configs:
+    - targets:
+      - ingestor:55673
+  - job_name: qos
+    scrape_interval: 5s
+    static_configs:
+    - targets:
+      - qos.default.svc.cluster.local:55682
+  - job_name: manager
+    scrape_interval: 12s
+    static_configs:
+    - targets:
+      - manager.default.svc.cluster.local:55671
+  - job_name: rabbitmq
+    scrape_interval: 20s
+    static_configs:
+    - targets:
+      - rabbitmq-exporter.default.svc.cluster.local:9419
+  - job_name: exporter
+    scrape_interval: 20s
+    static_configs:
+    - targets:
+      - exporter.default.svc.cluster.local:55684
+  

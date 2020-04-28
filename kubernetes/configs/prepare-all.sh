@@ -20,7 +20,7 @@ kubectl apply -f deployment/prometheus-ks8-volume-claim.yaml
 kubectl apply -f deployment/volume-manager-claim.yaml 
 kubectl apply -f deployment/volume-pdp-claim.yaml 
 
-kubectl create configmap configmap-prometheus --from-file=../../prometheus/prometheus-k8s.yml
+kubectl create configmap configmap-prometheus --from-file=../../prometheus/prometheus.yml
 kubectl create configmap configmap-bucket --from-file=../../thanos/thanos/bucket_config.yaml 
 kubectl create configmap prometheus-cluster --from-file=../../cluster/prometheus/prometheus.yml 
 kubectl create configmap configmap-logstash --from-file=../../logstash/logstash-2.conf 

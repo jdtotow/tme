@@ -10,7 +10,7 @@ services:
     ports:
       - 9090:9090
     volumes:
-      - "./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:z"
+      - "./prometheus/prometheus-dc.yml:/etc/prometheus/prometheus.yml:z"
       - "./prometheus/targets.json:/etc/prometheus/targets.json:z"
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
