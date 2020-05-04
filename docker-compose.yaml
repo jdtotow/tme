@@ -212,7 +212,18 @@ services:
   #    - monitoring
   #  ports:
   #    - 27017:27017
-  
+  slalite:
+    image: fermenreq/slalite:test
+    networks: 
+      - monitoring
+    container_name: slalite
+    ports:
+      - 8090:8090
+    depends_on: 
+      - rabbitmq
+    environment: 
+      - "EXPORTER_URL=http://qos:55682"
+      - "SLA_CHECKPERIOD=20"
   grafana:
     image: grafana/grafana
     hostname: grafana
