@@ -6,9 +6,10 @@ kubectl apply -f deployment/mongodb-volume.yaml
 kubectl apply -f deployment/prometheus-config-volume.yaml 
 kubectl apply -f deployment/sidecar-volume-prometheus.yaml 
 kubectl apply -f deployment/minio-volume.yaml 
-kubectl apply -f deployment/prometheus-ks8-volume.yaml 
+#kubectl apply -f deployment/prometheus-ks8-volume.yaml 
 kubectl apply -f deployment/volume-manager.yaml 
 kubectl apply -f deployment/volume-pdp.yaml 
+#kubectl apply -f deployment/volume-tme.yaml 
 
 #create pvc
 kubectl apply -f deployment/prometheus-config-volume-claim.yaml 
