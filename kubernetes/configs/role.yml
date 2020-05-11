@@ -5,7 +5,7 @@ metadata:
   namespace: tme 
 rules:
 - apiGroups:
-  - triplemonitoringengines.unipi.gr
+  - unipi.gr
   resources:
   - '*' 
   verbs: 
