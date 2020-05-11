@@ -5,7 +5,7 @@ metadata:
   namespace: tme 
 rules:
 - apiGroups:
-  - unipi.gr
+  - triplemonitoringengines.unipi.gr
   resources:
   - pods 
   - services
