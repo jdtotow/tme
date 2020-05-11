@@ -10,4 +10,4 @@ subjects:
 roleRef:
   kind: Role
   name: role-tme 
-  apiGroup: triplemonitoringengines.unipi.gr
+  apiGroup: rbac.authorization.k8s.io
