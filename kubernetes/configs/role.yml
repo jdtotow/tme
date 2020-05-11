@@ -7,11 +7,7 @@ rules:
 - apiGroups:
   - triplemonitoringengines.unipi.gr
   resources:
-  - pods 
-  - services
-  - configmaps
-  - persistentvolumeclaims
-  - secrets 
+  - '*' 
   verbs: 
   - get 
   - watch 
