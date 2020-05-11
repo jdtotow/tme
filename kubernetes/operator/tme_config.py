@@ -1,7 +1,7 @@
-import json 
+import json, os
 
 #Global settings
-namespace = "default"
+namespace = os.environ.get("NAMESPACE","default")
 domain = "svc.cluster.local"
 prometheus_hostname = "localhost" #"prometheus-main."+namespace+"."+domain
 prometheus_port = [{'port':9090,'name':'api'}]

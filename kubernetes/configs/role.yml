@@ -1,0 +1,24 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: role-tme
+  namespace: tme 
+rules:
+- apiGroups:
+  - unipi.gr
+  resources:
+  - pods 
+  - services
+  - configmaps
+  - persistentvolumeclaims
+  - secrets 
+  verbs: 
+  - get 
+  - watch 
+  - list 
+  - create 
+  - update 
+  - delete
+  - deletecollection
+  - update
+  - patch 

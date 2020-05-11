@@ -16,3 +16,6 @@ spec:
       - image: jdtotow/tme_operator:latest
         name: op
         imagePullPolicy: Always
+        env:
+        - name: NAMESPACE
+          value: "tme" 
