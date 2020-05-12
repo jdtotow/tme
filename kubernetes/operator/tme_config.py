@@ -36,7 +36,7 @@ minio_url = minio_hostname+":"+ str(minio_ports[0]['port'])
 
 #Prometheus config 
 prometheus = {'image': 'prom/prometheus','ports': prometheus_port}
-prometheus['env'] = {}
+prometheus['env'] = {"NAMESPACE": namespace}
 prometheus['args'] = ["--config.file=/etc/prometheus/prometheus.yml","--storage.tsdb.path=/prometheus","--web.console.libraries=/etc/prometheus/console_libraries","--storage.tsdb.max-block-duration=2h","--storage.tsdb.min-block-duration=2h","--web.console.templates=/etc/prometheus/consoles","--web.enable-lifecycle"]
 prometheus['mounts'] = [{"name": "prometheus-config-file-volume","mountPath":"/etc/prometheus/prometheus.yml","subPath":"prometheus.yml"},{"name":"config-volume-prometheus","mountPath":"/etc/prometheus"},{"name": "prometheus-tsdb","mountPath":"/prometheus"}]
 prometheus['volumes'] = [{'name':'prometheus-config-file-volume','configMap':{'name':'configmap-prometheus','key':'prometheus.yml','path':'prometheus.yml'}},{'name':'config-volume-prometheus','persistentVolumeClaim':{'name': 'prometheus-config-claim'}},{'name':'prometheus-tsdb','persistentVolumeClaim':{'name':'prometheus-tsdb-claim'}}]
@@ -63,10 +63,10 @@ gateway['args'] = ['store','--grpc-address=0.0.0.0:'+str(gateway['ports'][0]['po
 gateway['mounts'] = [{"name": "sidecar-bucket-config","mountPath":"/etc/thanos/bucket_config.yaml","subPath":"bucket_config.yaml"}]
 gateway['volumes'] = [{'name':'sidecar-bucket-config','configMap':{'name':'configmap-bucket','key':'bucket_config.yaml','path':'bucket_config.yaml'}}]
 gateway['resources'] = {"requests": {"memory": "32Mi","cpu": "25m"},"limits": {"memory": "128Mi","cpu": "500m"}}
-gateway['env'] = {}
+gateway['env'] = {"NAMESPACE": namespace}
 #thanos compactor 
 compactor = {'image':'quay.io/thanos/thanos:v0.10.0','ports': thanos_ports}
-compactor['env'] = {}
+compactor['env'] = {"NAMESPACE": namespace}
 compactor['mounts'] = [{"name": "sidecar-bucket-config","mountPath":"/etc/thanos/bucket_config.yaml","subPath":"bucket_config.yaml"}]
 compactor['volumes'] = [{'name':'sidecar-bucket-config','configMap':{'name':'configmap-bucket','key':'bucket_config.yaml','path':'bucket_config.yaml'}}]
 compactor['args'] = ['compact','--log.level=debug','--data-dir=/data','--objstore.config-file=/etc/thanos/bucket_config.yaml','--wait']

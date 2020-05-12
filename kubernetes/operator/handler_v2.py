@@ -234,7 +234,7 @@ class Operator():
         return None
     #//////////////////////////////////////////////////////////////////////////////////////
     def prepareResourceConstraint(self,res):
-        if len(res.keys()) == 0:
+        if res == None or len(res.keys()) == 0:
             return {"requests": {"memory": "64Mi","cpu": "250m"},"limits": {"memory": "128Mi","cpu": "500m"}}
         return res 
     def prepareEnvironmentVariable(self,_envs):
