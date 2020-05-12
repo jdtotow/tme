@@ -49,7 +49,7 @@ sidecar['mounts'] = [{"name": "sidecar-bucket-config","mountPath":"/etc/thanos/b
 sidecar['volumes'] = [{'name':'sidecar-bucket-config','configMap':{'name':'configmap-bucket','key':'bucket_config.yaml','path':'bucket_config.yaml'}},{'name':'sidecar-volume-prometheus','persistentVolumeClaim':{'name': 'sidecar-prometheus-volume-claim'}}]
 sidecar['initContainers'] = [{"name": "sidecar-prometheus-permission-fix","image": "busybox","command": ["/bin/chmod","-R","777","/config"],"volumeMounts": [{"name": "sidecar-volume-prometheus","mountPath": "/config"}]}]
 sidecar['resources'] = {"requests": {"memory": "32Mi","cpu": "50m"},"limits": {"memory": "128Mi","cpu": "500m"}}
-sidecar['env'] = {}
+sidecar['env'] = {"NAMESPACE": namespace}
 #thanos querier
 querier = {'image':'quay.io/thanos/thanos:v0.10.0','ports': thanos_ports}
 querier['args'] = ['query','--grpc-address=0.0.0.0:'+str(querier['ports'][0]['port']),'--http-address=0.0.0.0:'+str(querier['ports'][1]['port']),'--query.replica-label=replica','--store='+sidecar_url,'--store='+gateway_url]
