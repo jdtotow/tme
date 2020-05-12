@@ -139,6 +139,11 @@ grafana['env'] = {}
 grafana['mounts'] = []
 grafana['volumes'] = []
 
+#slalite
+slalite = {'image': 'fermenreq/slalite:test','ports':[{'port': 8090,'name':'slalite'}]}
+slalite['env'] = {'RABBITMQ_HOSTNAME': rabbitmq_hostname,'RABBITMQ_USER': rabbitmq_username,'RABBITMQ_PASS': rabbitmq_password}
+slalite['mounts'] = []
+slalite['volumes'] = []
 #pdp
 pdp = {'image':'jdtotow/pdp'}
 pdp['env'] = {"RABBITMQHOSTNAME":rabbitmq_hostname,"CONFIGFILEPATH":"/config","EVALUATIONINTERVAL":60}
@@ -172,7 +177,7 @@ minio['volumes'] = [{'name':'minio-volume','persistentVolumeClaim':{'name':'mini
 minio['initContainers'] = [{"name": "minio-volume-permission-fix","image": "busybox","command": ["/bin/chmod","-R","777","/data"],"volumeMounts": [{"name": "minio-volume","mountPath": "/data"}]}]
 minio['resources'] = {"requests": {"memory": "64Mi","cpu": "50m"},"limits": {"memory": "256Mi","cpu": "500m"}}
 def get_configs():
-    return {'prometheus': prometheus,'compactor':compactor,'gateway':gateway,'minio':minio,'sidecar': sidecar,'querier':querier,'ingestor': ingestor,'outapi': outapi,'exporter': exporter,'optimizer': optimizer,'pdp': pdp,'manager': manager,'ml': ml, 'qos': qos, 'mongodb': mongodb,'rabbitmq':rabbitmq,'rabbitmq_exporter': rabbitmq_exporter,'grafana': grafana,'logstash': logstash}
+    return {'prometheus': prometheus,'compactor':compactor,'gateway':gateway,'minio':minio,'sidecar': sidecar,'querier':querier,'ingestor': ingestor,'outapi': outapi,'slalite': slalite,'exporter': exporter,'optimizer': optimizer,'pdp': pdp,'manager': manager,'ml': ml, 'qos': qos, 'mongodb': mongodb,'rabbitmq':rabbitmq,'rabbitmq_exporter': rabbitmq_exporter,'grafana': grafana,'logstash': logstash}
 
 def loadPlanner():
     _file = None

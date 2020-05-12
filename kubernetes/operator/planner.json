@@ -37,6 +37,12 @@
             "services": ["gateway"]
         },
         {
+            "type": "slalite",
+            "name": "slalite",
+            "containers": ["slalite"],
+            "services": ["slalite"]
+        },
+        {
             "type": "ingestor",
             "name": "ingestor",
             "containers": ["ingestor"],
