@@ -1,20 +1,24 @@
-apiVersion: rbac.authorization.k8s.io/v1
+apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: Role
 metadata:
+  namespace: tme
   name: role-tme
-  namespace: tme 
 rules:
-- apiGroups:
-  - unipi.gr
-  resources:
-  - '*' 
-  verbs: 
-  - get 
-  - watch 
-  - list 
-  - create 
-  - update 
-  - delete
-  - deletecollection
-  - update
-  - patch 
+  # Framework: posting the events about the handlers progress/errors.
+  - apiGroups: [events.k8s.io]
+    resources: [events]
+    verbs: [create]
+  - apiGroups: [""]
+    resources: [events]
+    verbs: [create]
+
+  # Application: watching & handling for the custom resource we declare.
+  - apiGroups: [unipi.gr]
+    resources: [triplemonitoringengines]
+    verbs: [create,list, watch, patch,delete,update]
+
+  # Application: other resources it produces and manipulates.
+  # Here, we create Jobs+PVCs+Pods, but we do not patch/update/delete them ever.
+  - apiGroups: [""]
+    resources: [pods, persistentvolumeclaims, services]
+    verbs: [create,list, watch, patch,delete,update]
