@@ -11,7 +11,9 @@ rules:
   - apiGroups: [""]
     resources: [events]
     verbs: [create]
-
+  - apiGroups: [unipi.gr]
+    resources: [kopfpeerings]
+    verbs: [list, watch, patch, get]
   # Application: watching & handling for the custom resource we declare.
   - apiGroups: [unipi.gr]
     resources: [triplemonitoringengines]
