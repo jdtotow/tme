@@ -24,3 +24,11 @@ rules:
   - apiGroups: [""]
     resources: [pods, persistentvolumeclaims, services]
     verbs: [create,list, watch, patch,delete,update]
+  - apiGroups:
+    - apps
+    resources:
+    - deployments/finalizers
+    resourceNames:
+    - op
+    verbs:
+    - "update"

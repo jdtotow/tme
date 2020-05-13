@@ -1,25 +1,25 @@
 #!/bin/bash
 
 # create pv
-kubectl apply -f deployment/prometheus-volume.yaml 
-kubectl apply -f deployment/mongodb-volume.yaml 
-kubectl apply -f deployment/prometheus-config-volume.yaml 
-kubectl apply -f deployment/sidecar-volume-prometheus.yaml 
-kubectl apply -f deployment/minio-volume.yaml 
+#kubectl apply -f deployment/prometheus-volume.yaml 
+#kubectl apply -f deployment/mongodb-volume.yaml 
+#kubectl apply -f deployment/prometheus-config-volume.yaml 
+#kubectl apply -f deployment/sidecar-volume-prometheus.yaml 
+#kubectl apply -f deployment/minio-volume.yaml 
 #kubectl apply -f deployment/prometheus-ks8-volume.yaml 
-kubectl apply -f deployment/volume-manager.yaml 
-kubectl apply -f deployment/volume-pdp.yaml 
+#kubectl apply -f deployment/volume-manager.yaml 
+#kubectl apply -f deployment/volume-pdp.yaml 
 #kubectl apply -f deployment/volume-tme.yaml 
 
 #create pvc
 kubectl apply -f deployment/prometheus-config-volume-claim.yaml 
 kubectl apply -f deployment/prometheus-tsdb-volume-claim.yaml 
-kubectl apply -f deployment/mongodb-volume-claim.yaml
+#kubectl apply -f deployment/mongodb-volume-claim.yaml
 kubectl apply -f deployment/sidecar-volume-prometheus-claim.yaml
 kubectl apply -f deployment/minio-volume-claim.yaml 
-kubectl apply -f deployment/prometheus-ks8-volume-claim.yaml 
+#kubectl apply -f deployment/prometheus-ks8-volume-claim.yaml 
 kubectl apply -f deployment/volume-manager-claim.yaml 
-kubectl apply -f deployment/volume-pdp-claim.yaml 
+#kubectl apply -f deployment/volume-pdp-claim.yaml 
 
 kubectl create configmap configmap-prometheus --from-file=../../prometheus/prometheus.yml
 kubectl create configmap configmap-bucket --from-file=../../thanos/thanos/bucket_config.yaml 
