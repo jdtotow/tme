@@ -1,6 +1,6 @@
 apiVersion: unipi.gr/v1
 kind: TripleMonitoringEngine
 metadata:
-  name: prometheus-main 
+  name: prometheus-main  
 spec:
   type: prometheus 

@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tester
+spec:
+  selector:
+    matchLabels:
+      app: tester
+  template:
+    metadata:
+      labels:
+        app: tester
+    spec:
+      containers:
+      - image: jdtotow/tester
+        name: tester
+        imagePullPolicy: Always
+        env:
+        - name: RECOMMENDER_HOSTNAME
+          value: "recommender.tme.svc.cluster.local"

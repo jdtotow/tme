@@ -4,7 +4,7 @@ global:
     replicas: prometheus-main
 scrape_configs:
 - job_name: prometheus
-  scrape_interval: 12s
+  scrape_interval: 5s
   static_configs:
   - targets:
     - localhost:9090
@@ -36,17 +36,17 @@ scrape_configs:
   - targets:
     - qos:55682
 - job_name: manager
-  scrape_interval: 12s
+  scrape_interval: 5s
   static_configs:
   - targets:
     - manager:55671
 - job_name: rabbitmq
-  scrape_interval: 20s
+  scrape_interval: 5s
   static_configs:
   - targets:
     - rabbitmq-exporter:9419
 - job_name: exporter
-  scrape_interval: 20s
+  scrape_interval: 5s
   static_configs:
   - targets:
     - exporter:55684

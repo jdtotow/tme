@@ -19,11 +19,11 @@ services:
       - '--storage.tsdb.retention.time=52h'
       - '--web.enable-lifecycle'
 
-  prometheusbeat:
+  ingestor:
     image: jdtotow/prometheusbeat
-    hostname: prometheusbeat
+    hostname: ingestor
     restart: always
-    container_name: prometheusbeat
+    container_name: ingestor
     networks:
       - monitoring
     ports:
@@ -33,7 +33,7 @@ services:
       - "EXPORTER_URL=http://localhost:55673"
       - "RABBITMQ_HOST=rabbitmq"
       - "SLEEP=5"
-      - "COMPONENTNAME=prometheusbeat"
+      - "COMPONENTNAME=ingestor"
       - "UPDATEMETRICSLISTNAMEPERIOD=30"
       - "HTTP_OUT_URL=http://optimizer:55674/beats"
 

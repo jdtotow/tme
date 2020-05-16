@@ -3,9 +3,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: prometheus-tsdb-claim   
 spec:
-  storageClassName: standard
+  storageClassName: performance
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 2Gi
+      storage: 200Mi

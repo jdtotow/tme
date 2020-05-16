@@ -85,7 +85,7 @@ metric2['on_change_only'] = False
 metric2['labels'] = {'application':'prometheusbeat'}
 
 metric3 = {}
-metric3['name'] = "scrape_duration_seconds"
+metric3['name'] = "*"
 metric3['on_change_only'] = False
 metric3['labels'] = {'application':'prometheus'}
 

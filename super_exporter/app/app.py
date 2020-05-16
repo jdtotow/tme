@@ -82,12 +82,12 @@ class Manager():
                 _readyness = False
                 consumer_manager.stop()
                 print("Restarting all threads")
-                time.sleep(10)
+                time.sleep(5)
                 consumer_manager.start()
             else:
                 _liveness = True 
                 _readyness = True 
-            time.sleep(1)
+            time.sleep(5)
 
 
 @app.route('/liveness',methods=['GET','POST'])

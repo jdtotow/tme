@@ -21,7 +21,7 @@ mongodb_password = "bigdatastack"
 mongodb_dbname = "TPME"
 #///////////////////////////////////////////////////////////////////////////////////////////////
 elasticsearch_hostname = "elasticsearch."+namespace+"."+domain
-logstash_hostname = "elasticsearch."+namespace+"."+domain
+logstash_hostname = "logstash."+namespace+"."+domain
 #///////////////////////////////////////////////////////////////////////////////////////////////
 thanos_ports = [{'port':10091,'name':'grpc'},{'port': 10902,'name':'http'}]
 sidecar_hostname = "sidecar."+namespace+"."+domain
@@ -41,19 +41,19 @@ prometheus['args'] = ["--config.file=/etc/prometheus/prometheus.yml","--storage.
 prometheus['mounts'] = [{"name": "prometheus-config-file-volume","mountPath":"/etc/prometheus/prometheus.yml","subPath":"prometheus.yml"},{"name":"config-volume-prometheus","mountPath":"/etc/prometheus"},{"name": "prometheus-tsdb","mountPath":"/prometheus"}]
 prometheus['volumes'] = [{'name':'prometheus-config-file-volume','configMap':{'name':'configmap-prometheus','key':'prometheus.yml','path':'prometheus.yml'}},{'name':'config-volume-prometheus','persistentVolumeClaim':{'name': 'prometheus-config-claim'}},{'name':'prometheus-tsdb','persistentVolumeClaim':{'name':'prometheus-tsdb-claim'}}]
 prometheus['initContainers'] = [{"name": "prometheus-config-permission-fix","image": "busybox","command": ["/bin/chmod","-R","777","/config"],"volumeMounts": [{"name": "config-volume-prometheus","mountPath": "/config"}]},{"name": "prometheus-tsdb-permission-fix","image": "busybox","command": ["/bin/chmod","-R","777","/tsdb"],"volumeMounts": [{"name": "prometheus-tsdb","mountPath": "/tsdb"}]}]
-prometheus['resources'] = {"requests": {"memory": "32Mi","cpu": "50m"},"limits": {"memory": "128Mi","cpu": "500m"}}
+prometheus['resources'] = {"requests": {"memory": "32Mi","cpu": "50m"},"limits": {"memory": "1Gi","cpu": "500m"}}
 #thanos sidecar
 sidecar = {'image': 'quay.io/thanos/thanos:v0.10.0','ports':thanos_ports}
 sidecar['args'] = ['sidecar','--tsdb.path=/prometheus','--prometheus.url='+prometheus_url,'--grpc-address=0.0.0.0:'+str(sidecar['ports'][0]['port']),'--http-address=0.0.0.0:'+str(sidecar['ports'][1]['port']),'--objstore.config-file=/etc/thanos/bucket_config.yaml']
 sidecar['mounts'] = [{"name": "sidecar-bucket-config","mountPath":"/etc/thanos/bucket_config.yaml","subPath":"bucket_config.yaml"},{"name":"sidecar-volume-prometheus","mountPath":"/prometheus"}]
 sidecar['volumes'] = [{'name':'sidecar-bucket-config','configMap':{'name':'configmap-bucket','key':'bucket_config.yaml','path':'bucket_config.yaml'}},{'name':'sidecar-volume-prometheus','persistentVolumeClaim':{'name': 'sidecar-prometheus-volume-claim'}}]
 sidecar['initContainers'] = [{"name": "sidecar-prometheus-permission-fix","image": "busybox","command": ["/bin/chmod","-R","777","/config"],"volumeMounts": [{"name": "sidecar-volume-prometheus","mountPath": "/config"}]}]
-sidecar['resources'] = {"requests": {"memory": "32Mi","cpu": "50m"},"limits": {"memory": "128Mi","cpu": "500m"}}
+sidecar['resources'] = {"requests": {"memory": "32Mi","cpu": "50m"},"limits": {"memory": "1Gi","cpu": "500m"}}
 sidecar['env'] = {"NAMESPACE": namespace}
 #thanos querier
 querier = {'image':'quay.io/thanos/thanos:v0.10.0','ports': thanos_ports}
 querier['args'] = ['query','--grpc-address=0.0.0.0:'+str(querier['ports'][0]['port']),'--http-address=0.0.0.0:'+str(querier['ports'][1]['port']),'--query.replica-label=replica','--store='+sidecar_url,'--store='+gateway_url]
-querier['resources'] = {"requests": {"memory": "32Mi","cpu": "50m"},"limits": {"memory": "128Mi","cpu": "500m"}}
+querier['resources'] = {"requests": {"memory": "32Mi","cpu": "50m"},"limits": {"memory": "1Gi","cpu": "500m"}}
 querier['mounts'] = []
 querier['volumes'] = []
 querier['env'] = {}
@@ -62,7 +62,7 @@ gateway = {'image':'quay.io/thanos/thanos:v0.10.0','ports': thanos_ports}
 gateway['args'] = ['store','--grpc-address=0.0.0.0:'+str(gateway['ports'][0]['port']),'--http-address=0.0.0.0:'+str(gateway['ports'][1]['port']),'--data-dir=/tmp/thanos/store','--objstore.config-file=/etc/thanos/bucket_config.yaml']
 gateway['mounts'] = [{"name": "sidecar-bucket-config","mountPath":"/etc/thanos/bucket_config.yaml","subPath":"bucket_config.yaml"}]
 gateway['volumes'] = [{'name':'sidecar-bucket-config','configMap':{'name':'configmap-bucket','key':'bucket_config.yaml','path':'bucket_config.yaml'}}]
-gateway['resources'] = {"requests": {"memory": "32Mi","cpu": "25m"},"limits": {"memory": "128Mi","cpu": "500m"}}
+gateway['resources'] = {"requests": {"memory": "32Mi","cpu": "25m"},"limits": {"memory": "1Gi","cpu": "500m"}}
 gateway['env'] = {"NAMESPACE": namespace}
 #thanos compactor 
 compactor = {'image':'quay.io/thanos/thanos:v0.10.0','ports': thanos_ports}
@@ -70,34 +70,36 @@ compactor['env'] = {"NAMESPACE": namespace}
 compactor['mounts'] = [{"name": "sidecar-bucket-config","mountPath":"/etc/thanos/bucket_config.yaml","subPath":"bucket_config.yaml"}]
 compactor['volumes'] = [{'name':'sidecar-bucket-config','configMap':{'name':'configmap-bucket','key':'bucket_config.yaml','path':'bucket_config.yaml'}}]
 compactor['args'] = ['compact','--log.level=debug','--data-dir=/data','--objstore.config-file=/etc/thanos/bucket_config.yaml','--wait']
-compactor['resources'] = {"requests": {"memory": "32Mi","cpu": "25m"},"limits": {"memory": "128Mi","cpu": "500m"}}
+compactor['resources'] = {"requests": {"memory": "32Mi","cpu": "25m"},"limits": {"memory": "1Gi","cpu": "500m"}}
 #PrometheusBeat config 
-ingestor = {'image': 'jdtotow/prometheusbeat','ports': [{'port':55679,'name':'master'},{'port':55680,'name':'secondary'}]}
+ingestor = {'image': 'jdtotow/prometheusbeat','ports': [{'port':55679,'name':'master'}]}
 ingestor['env'] = {"PROMETHEUS_URL_API":querier_url,"RABBITMQ_PORT": rabbitmq_ports[0]['port'],"EXPORTER_URL":"http://localhost:55679","RABBITMQ_HOST":rabbitmq_hostname,"SLEEP":5,"COMPONENTNAME":"ingestor","UPDATEMETRICSLISTNAMEPERIOD":32,"EXPORTERPORT":55679,"DEPLOYMENT":"primary"}
-ingestor['resources'] = {"requests": {"memory": "64Mi","cpu": "50m"},"limits": {"memory": "128Mi","cpu": "500m"}}
-ingestor['liveness'] = {"path":"/liveness","port": 55679}
-ingestor['readyness'] = {"path":"/readyness","port": 55679}
+ingestor['resources'] = {"requests": {"memory": "64Mi","cpu": "50m"},"limits": {"memory": "1Gi","cpu": "500m"}}
+#ingestor['liveness'] = {"path":"/liveness","port": 55679}
+#ingestor['readyness'] = {"path":"/readyness","port": 55679}
 ingestor['mounts'] = []
 ingestor['volumes'] = []
 #outapi
 outapi = {'image': 'jdtotow/outapi','ports': [{'port':55670,'name':'outapi'}]}
 outapi['env'] = {"ELASTICSEARCHHOST":elasticsearch_hostname,"MONGODBHOST":mongodb_hostname,"PROMETHEUS_URL_API":prometheus_url,"PROCESSINGDELAY":120,"DEFAULTEND":30}
-outapi['resources'] = {"requests": {"memory": "24Mi","cpu": "25m"},"limits": {"memory": "128Mi","cpu": "500m"}}
+outapi['resources'] = {"requests": {"memory": "24Mi","cpu": "25m"},"limits": {"memory": "512Mi","cpu": "500m"}}
 outapi['mounts'] = []
 outapi['volumes'] = []
 #manager
 manager = {'image':'jdtotow/manager','ports': [{'port':55671,'name':'manager'}]}
 manager['env'] = {"MONGODB_HOST":mongodb_uri,"RABBITMQHOST":rabbitmq_hostname,"URLEXPORTER":"http://localhost:55671","COMPONENTNAME":"manager","NTHREADSCONSUMER":1}
-manager['mounts'] = [{"name":"volume-manager","mountPath":"/config"}]
-manager['volumes'] = [{'name':'volume-manager','persistentVolumeClaim':{'name': 'volume-manager-claim'}}]
+manager['mounts'] = [] #[{"name":"volume-manager","mountPath":"/config"}]
+manager['volumes'] = [] #[{'name':'volume-manager','persistentVolumeClaim':{'name': 'volume-manager-claim'}}]
 manager['initContainers'] = [{"name": "manager-permission-fix","image": "busybox","command": ["/bin/chmod","-R","777","/data"],"volumeMounts": [{"name": "volume-manager","mountPath": "/data"}]}]
-manager['resources'] = {"requests": {"memory": "24Mi","cpu": "25m"},"limits": {"memory": "128Mi","cpu": "500m"}}
+manager['resources'] = {"requests": {"memory": "24Mi","cpu": "25m"},"limits": {"memory": "512Mi","cpu": "500m"}}
 manager['liveness'] = {"path":"/liveness","port": 55671}
 manager['readyness'] = {"path":"/readyness","port": 55671}
 #exporter
 exporter = {'image':'jdtotow/exporter','ports': [{'port':55684,'name':'exporter'}]}
-exporter['resources'] = {"requests": {"memory": "24Mi","cpu": "25m"},"limits": {"memory": "128Mi","cpu": "500m"}}
+exporter['resources'] = {"requests": {"memory": "24Mi","cpu": "25m"},"limits": {"memory": "512Mi","cpu": "500m"}}
 exporter['env'] = {"RABBITMQHOSTNAME":rabbitmq_hostname}
+exporter['liveness'] = {"path":"/liveness","port": 55684}
+exporter['readyness'] = {"path":"/readyness","port": 55684}
 exporter['mounts'] = []
 exporter['volumes'] = []
 
@@ -106,7 +108,7 @@ logstash = {'image':'docker.elastic.co/logstash/logstash:6.4.3','ports': [{'port
 logstash['env'] = {"RABBITMQHOST":rabbitmq_hostname,"RABBITMQEXCHANGETYPE":"direct","RABBITMQQEUEU":"export_metrics","RABBITMQUSER":rabbitmq_username,"RABBITMQPASSWORD":rabbitmq_password,"LOGSTASH2HOST":logstash_hostname}
 logstash['mounts'] = [{"name": "logstash-config","mountPath":"/usr/share/logstash/pipeline/logstash.conf","subPath":"logstash.conf"}]
 logstash['volumes'] = [{'name':"logstash-config",'configMap':{'name':'configmap-logstash','key':'logstash-2.conf','path':'logstash.conf'}}]
-logstash['resources'] = {"requests": {"memory": "1024Mi","cpu": "50m"},"limits": {"memory": "2048Mi","cpu": "900m"}}
+logstash['resources'] = {"requests": {"memory": "1024Mi","cpu": "50m"},"limits": {"memory": "8048Mi","cpu": "900m"}}
 #rabbitmq-exporter
 rabbitmq_exporter = {'image':'kbudde/rabbitmq-exporter','ports':[{'port':9419,'name':'exporter'}]}
 rabbitmq_exporter['env'] = {"RABBIT_URL":rabbitmq_url,"RABBIT_USER":rabbitmq_username,"RABBIT_PASSWORD":rabbitmq_password}
@@ -115,7 +117,7 @@ rabbitmq_exporter['volumes'] = []
 
 #rabbitmq
 rabbitmq = {'image':'jdtotow/rabbitmq','ports': rabbitmq_ports}
-rabbitmq['resources'] = {"requests": {"memory": "32Mi","cpu": "50m"},"limits": {"memory": "128Mi","cpu": "500m"}}
+rabbitmq['resources'] = {"requests": {"memory": "32Mi","cpu": "50m"},"limits": {"memory": "8000Mi","cpu": "500m"}}
 rabbitmq['env'] = {}
 rabbitmq['mounts'] = []
 rabbitmq['volumes'] = []
@@ -175,7 +177,7 @@ minio['env'] = {'MINIO_ACCESS_KEY':'smth','MINIO_SECRET_KEY':'Need8Chars'}
 minio['mounts'] = [{"name": "minio-volume","mountPath":"/data","subPath":""}]
 minio['volumes'] = [{'name':'minio-volume','persistentVolumeClaim':{'name':'minio-volume-claim'}}]
 minio['initContainers'] = [{"name": "minio-volume-permission-fix","image": "busybox","command": ["/bin/chmod","-R","777","/data"],"volumeMounts": [{"name": "minio-volume","mountPath": "/data"}]}]
-minio['resources'] = {"requests": {"memory": "64Mi","cpu": "50m"},"limits": {"memory": "256Mi","cpu": "500m"}}
+minio['resources'] = {"requests": {"memory": "64Mi","cpu": "50m"},"limits": {"memory": "8256Mi","cpu": "500m"}}
 def get_configs():
     return {'prometheus': prometheus,'compactor':compactor,'gateway':gateway,'minio':minio,'sidecar': sidecar,'querier':querier,'ingestor': ingestor,'outapi': outapi,'slalite': slalite,'exporter': exporter,'optimizer': optimizer,'pdp': pdp,'manager': manager,'ml': ml, 'qos': qos, 'mongodb': mongodb,'rabbitmq':rabbitmq,'rabbitmq_exporter': rabbitmq_exporter,'grafana': grafana,'logstash': logstash}
 

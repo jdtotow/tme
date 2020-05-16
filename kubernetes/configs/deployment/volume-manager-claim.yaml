@@ -3,7 +3,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: volume-manager-claim
 spec:
-  storageClassName: manual
+  storageClassName: standard
   accessModes:
     - ReadWriteOnce
   resources:

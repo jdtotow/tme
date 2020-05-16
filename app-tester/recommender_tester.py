@@ -1,6 +1,7 @@
-import multiprocessing.pool, requests, time, random
+import multiprocessing.pool, requests, time, random, os 
 
-recommender_url = "http://localhost:7070/recommendations?customerId=1&limit=3"
+base_url = os.environ.get("RECOMMENDER_HOSTNAME","localhost")
+recommender_url = "http://"+base_url+":7070/recommendations?customerId=1&limit=3"
 
 def startWorkers(max_thread_sender, func, _list):
     pool = multiprocessing.pool.ThreadPool(processes=max_thread_sender)

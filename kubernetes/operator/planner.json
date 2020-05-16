@@ -13,9 +13,9 @@
             "services": ["querier"]
         },
         {
-            "name": "minio-compactor",
+            "name": "minio",
             "type": "minio",
-            "containers":["minio","compactor"],
+            "containers":["minio"],
             "services":["minio"]
         },
         {
@@ -64,7 +64,7 @@
             "type": "exporter",
             "name": "exporter-logstash",
             "containers": ["exporter","logstash"],
-            "services":["logstash"]
+            "services":["logstash","exporter"]
         },
         {
             "type": "grafana",

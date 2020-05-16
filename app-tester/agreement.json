@@ -1,11 +1,11 @@
 {
     "id": "a03",
-    "name": "exporter",
+    "name": "provide-recomendation-service",
     "state": "started",
     "details":{
         "id": "a03",
         "type": "agreement",
-        "name": "exporter",
+        "name": "provide-recomendation-service",
         "provider": { "id": "mf2c", "name": "mF2C Platform" },
         "client": { "id": "c02", "name": "A client" },
         "creation": "2019-01-16T17:09:45Z",

@@ -3,9 +3,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: minio-volume-claim   
 spec:
-  storageClassName: manual
+  storageClassName: standard
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 50Gi
+      storage: 20Gi

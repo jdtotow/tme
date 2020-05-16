@@ -1,4 +1,4 @@
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   namespace: tme
@@ -16,7 +16,7 @@ rules:
     verbs: [list, watch, patch, get]
   # Application: watching & handling for the custom resource we declare.
   - apiGroups: [unipi.gr]
-    resources: [triplemonitoringengines]
+    resources: [triplemonitoringengines,triplemonitoringengines/finalizers]
     verbs: [create,list, watch, patch,delete,update]
 
   # Application: other resources it produces and manipulates.
@@ -29,6 +29,6 @@ rules:
     resources:
     - deployments/finalizers
     resourceNames:
-    - op
+    - '*'
     verbs:
-    - "update"
+    - update
