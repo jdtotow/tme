@@ -257,7 +257,7 @@ class Operator():
         pod = self.preparePod(pod_name,plan,containers_wrapper)
         #pod creation 
         #self.createPod(pod,namespace,body,_type)
-        svc = None 
+        svcs = [] 
         time.sleep(5)
         if "services" in plan:
             services = plan["services"]
@@ -267,9 +267,10 @@ class Operator():
                     _ports_object = self.setSvc(_ports)
                     svc = {'apiVersion': 'v1', 'metadata': {'name' : service,'labels':{'app': pod_name}}, 'spec': { 'selector': {'app': pod_name}, 'type': _service_type}}
                     svc['spec']['ports'] = _ports_object
+                    svcs.append(svc)
                     #self.createService(svc,namespace,body,_type)
         #return f"Object {_type} created in {namespace}"
-        return (pod,svc)
+        return (pod,svcs)
         
     def loadComponentConfig(self,component):
         component_config = {}
@@ -351,15 +352,16 @@ def create_fn(body, spec, **kwargs):
     if _type == "tme-prometheus":
         msg = operator.deployPrometheusWripper(spec,name,namespace,_type,body)
     else:
-        (pod,svc) = operator.deployType(_type,body,namespace)
+        (pod,svcs) = operator.deployType(_type,body,namespace)
         kopf.adopt(pod, owner=body)
 
         register.createKubeObject(name,pod,"pod",pod['metadata']['name'],body)
         obj = api.create_namespaced_pod(namespace, pod) 
-        if svc != None:
-            kopf.adopt(svc,owner=body)
-            obj = api.create_namespaced_service(namespace,svc)
-            register.createKubeObject(name,svc,"svc","None",body)
+        if svcs != []:
+            for svc in svcs:
+                kopf.adopt(svc,owner=body)
+                obj = api.create_namespaced_service(namespace,svc)
+                register.createKubeObject(name,svc,"svc","None",body)
     return {"message": "Object created"}
         
 

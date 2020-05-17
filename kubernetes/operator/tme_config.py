@@ -75,8 +75,8 @@ compactor['resources'] = {"requests": {"memory": "32Mi","cpu": "25m"},"limits": 
 ingestor = {'image': 'jdtotow/prometheusbeat','ports': [{'port':55679,'name':'master'}]}
 ingestor['env'] = {"PROMETHEUS_URL_API":querier_url,"RABBITMQ_PORT": rabbitmq_ports[0]['port'],"EXPORTER_URL":"http://localhost:55679","RABBITMQ_HOST":rabbitmq_hostname,"SLEEP":5,"COMPONENTNAME":"ingestor","UPDATEMETRICSLISTNAMEPERIOD":32,"EXPORTERPORT":55679,"DEPLOYMENT":"primary"}
 ingestor['resources'] = {"requests": {"memory": "64Mi","cpu": "50m"},"limits": {"memory": "1Gi","cpu": "500m"}}
-#ingestor['liveness'] = {"path":"/liveness","port": 55679}
-#ingestor['readyness'] = {"path":"/readyness","port": 55679}
+ingestor['liveness'] = {"path":"/liveness","port": 55679}
+ingestor['readyness'] = {"path":"/readyness","port": 55679}
 ingestor['mounts'] = []
 ingestor['volumes'] = []
 #outapi

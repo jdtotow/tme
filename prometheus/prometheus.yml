@@ -50,3 +50,19 @@ scrape_configs:
   static_configs:
   - targets:
     - exporter.${NAMESPACE:default}.svc.cluster.local:55684
+    
+- job_name: 'kubernetes-pods'
+  kubernetes_sd_configs:
+  - role: pod
+    namespaces:
+      names:
+      - tme 
+  relabel_configs:
+  - action: labelmap
+    regex: __meta_kubernetes_pod_label_(.+)
+  - source_labels: [__meta_kubernetes_namespace]
+    action: replace
+    target_label: kubernetes_namespace
+  - source_labels: [__meta_kubernetes_pod_name]
+    action: replace
+    target_label: kubernetes_pod_name
