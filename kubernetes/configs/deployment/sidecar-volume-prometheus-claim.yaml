@@ -3,7 +3,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: sidecar-prometheus-volume-claim 
 spec:
-  storageClassName: performance
+  storageClassName: standard
   accessModes:
     - ReadWriteOnce
   resources:

@@ -214,11 +214,15 @@ class Operator():
         #pod = {'apiVersion': 'v1', 'metadata': {'name' : name, 'labels': {'app': name}}}
         containers = []
         containers.append(self.prepareContainer('sidecar',_type))
+        sa = 'default'
+        if 'serviceAccountName' in spec:
+            sa = spec['serviceAccountName']
         containers_wrapper = {'containers': containers}
         plan = {'containers': ['sidecar']}
         pod = self.preparePod(name,plan,containers_wrapper)
         #replace prometheus.url value by the provided
         pod['spec']['containers'][0]['args'][2] = '--prometheus.url='+ spec['prometheus']['url']
+        pod['spec']['serviceAccountName'] = sa 
         #replace mounts and volumes 
         # mounts {"name":"sidecar-volume-prometheus","mountPath":"/prometheus"}
         # volumes {'name':'sidecar-volume-prometheus','persistentVolumeClaim':{'name': 'sidecar-prometheus-volume-claim'}}
@@ -253,7 +257,10 @@ class Operator():
         for container_name in plan["containers"]:
             containers.append(self.prepareContainer(container_name,_type))
         pod_name = plan["name"]
-        containers_wrapper = { 'containers': containers}
+        sa = 'default'
+        if 'serviceAccountName' in body['spec']:
+            sa = body['spec']['serviceAccountName']
+        containers_wrapper = { 'containers': containers, 'serviceAccountName': sa}
         pod = self.preparePod(pod_name,plan,containers_wrapper)
         #pod creation 
         #self.createPod(pod,namespace,body,_type)

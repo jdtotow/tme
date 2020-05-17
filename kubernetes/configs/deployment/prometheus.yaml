@@ -3,4 +3,5 @@ kind: TripleMonitoringEngine
 metadata:
   name: prometheus-main  
 spec:
+  serviceAccountName: tme-operator 
   type: prometheus 
