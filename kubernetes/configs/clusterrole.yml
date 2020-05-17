@@ -12,6 +12,9 @@ rules:
     verbs: [list, get]
 
   # Application: read-only access for watching cluster-wide.
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: [list]
   - apiGroups: [unipi.gr]
     resources: 
     - '*'
