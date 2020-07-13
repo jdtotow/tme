@@ -21,6 +21,6 @@ spec:
         - name: NAMESPACE
           value: "tme" 
         - name: PLATFORM
-          value: "kubernetes"
+          value: "openshift"
         - name: ROUTINE_INTERVAL
           value: "30"

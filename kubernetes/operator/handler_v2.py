@@ -9,6 +9,7 @@ _deploy_type = os.environ.get("DEPLOYMENT_TYPE","COMPONENT")
 _namespace = os.environ.get("NAMESPACE","default")
 _service_type = os.environ.get("SERVICETYPE","ClusterIP")
 _platform = os.environ.get("PLATFORM","kubernetes")
+_delete_lock = False 
 
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.INFO)
@@ -127,6 +128,8 @@ class Operator():
             container['readynessProbe'] = self.prepareLivenessOrReadyness(_readyness)
         return container
     def getPodsList(self):
+        if _delete_lock:
+            return None 
         api = kubernetes.client.CoreV1Api()
         pod_list = api.list_namespaced_pod(self.namespace)
         del self.list_pods[:]
@@ -169,7 +172,7 @@ class Operator():
 
         pod = {'apiVersion': 'v1', 'metadata': {'name' : name, 'labels': {'app': name}}}
         containers['volumes'] = all_volumes
-        if _platform == "openshift":
+        if _platform != "openshift":
             containers['initContainers'] = all_init_containers
         pod['spec'] = containers
         return pod 
@@ -242,11 +245,14 @@ class Operator():
         self.register.createKubeObject(_type,svc,"svc")
         #adding new service created to the current querier
         querier_obj = self.register.getKubeObject("querier","pod").getObject()
+        global _delete_lock
+        _delete_lock = True 
         self.api.delete_namespaced_pod("querier", namespace)
         time.sleep(10) #sleep some moment
         #'--store='+sidecar_url
         querier_obj['spec']['containers'][0]['args'].append('--store='+_new_service_hostname)
         obj = self.api.create_namespaced_pod(namespace, querier_obj)
+        _delete_lock = False 
         return f"Pod and Service created by TripleMonitoringEngine {name}"
     def deployType(self,_type, body, namespace):
         plan = self.getTypePlan(_type)
@@ -267,6 +273,9 @@ class Operator():
         svcs = [] 
         time.sleep(5)
         if "services" in plan:
+            if 'serviceType' in body['spec']:
+                global _service_type
+                _service_type = body['spec']['serviceType']
             services = plan["services"]
             for service in services:
                 _ports = self.getConfig(service,'ports')
@@ -358,6 +367,26 @@ def create_fn(body, spec, **kwargs):
     api = kubernetes.client.CoreV1Api()
     if _type == "tme-prometheus":
         msg = operator.deployPrometheusWripper(spec,name,namespace,_type,body)
+    elif _type == "all-tme":
+        interval = int(body['spec']['interval'])
+        if interval < 10:
+            interval = 10 
+        components = body['spec']['components']
+        for component_type in components.keys():
+            component_spec = components[component_type]
+            body['metadata']['name'] = component_spec['name']
+            body['spec']['type'] = component_spec
+            (pod,svcs) = operator.deployType(component_type,body,namespace)
+            kopf.adopt(pod, owner=body)
+
+            register.createKubeObject(name,pod,"pod",pod['metadata']['name'],body)
+            obj = api.create_namespaced_pod(namespace, pod) 
+            if svcs != []:
+                for svc in svcs:
+                    kopf.adopt(svc,owner=body)
+                    obj = api.create_namespaced_service(namespace,svc)
+                    register.createKubeObject(name,svc,"svc","None",body)
+            time.sleep(interval)
     else:
         (pod,svcs) = operator.deployType(_type,body,namespace)
         kopf.adopt(pod, owner=body)

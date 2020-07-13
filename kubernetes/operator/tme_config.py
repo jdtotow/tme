@@ -40,7 +40,7 @@ prometheus['env'] = {"NAMESPACE": namespace}
 prometheus['args'] = ["--config.file=/etc/prometheus/prometheus.yml","--storage.tsdb.path=/prometheus","--web.console.libraries=/etc/prometheus/console_libraries","--storage.tsdb.max-block-duration=2h","--storage.tsdb.min-block-duration=2h","--web.console.templates=/etc/prometheus/consoles","--web.enable-lifecycle"]
 prometheus['mounts'] = [{"name": "prometheus-config-file-volume","mountPath":"/etc/prometheus/prometheus.yml","subPath":"prometheus.yml"},{"name":"config-volume-prometheus","mountPath":"/etc/prometheus"},{"name": "prometheus-tsdb","mountPath":"/prometheus"}]
 prometheus['volumes'] = [{'name':'prometheus-config-file-volume','configMap':{'name':'configmap-prometheus','key':'prometheus.yml','path':'prometheus.yml'}},{'name':'config-volume-prometheus','persistentVolumeClaim':{'name': 'prometheus-config-claim'}},{'name':'prometheus-tsdb','persistentVolumeClaim':{'name':'prometheus-tsdb-claim'}}]
-prometheus['initContainers'] = [{"name": "prometheus-config-permission-fix","image": "busybox","command": ["/bin/chmod","-R","777","/config"],"volumeMounts": [{"name": "config-volume-prometheus","mountPath": "/config"}]},{"name": "prometheus-tsdb-permission-fix","image": "busybox","command": ["/bin/chmod","-R","777","/tsdb"],"volumeMounts": [{"name": "prometheus-tsdb","mountPath": "/tsdb"}]}]
+#prometheus['initContainers'] = [{"name": "prometheus-config-permission-fix","image": "busybox","command": ["/bin/chmod","-R","777","/config"],"volumeMounts": [{"name": "config-volume-prometheus","mountPath": "/config"}]},{"name": "prometheus-tsdb-permission-fix","image": "busybox","command": ["/bin/chmod","-R","777","/tsdb"],"volumeMounts": [{"name": "prometheus-tsdb","mountPath": "/tsdb"}]}]
 prometheus['resources'] = {"requests": {"memory": "32Mi","cpu": "50m"},"limits": {"memory": "1Gi","cpu": "500m"}}
 #thanos sidecar
 sidecar = {'image': 'quay.io/thanos/thanos:v0.10.0','ports':thanos_ports}
@@ -75,8 +75,8 @@ compactor['resources'] = {"requests": {"memory": "32Mi","cpu": "25m"},"limits": 
 ingestor = {'image': 'jdtotow/prometheusbeat','ports': [{'port':55679,'name':'master'}]}
 ingestor['env'] = {"PROMETHEUS_URL_API":querier_url,"RABBITMQ_PORT": rabbitmq_ports[0]['port'],"EXPORTER_URL":"http://localhost:55679","RABBITMQ_HOST":rabbitmq_hostname,"SLEEP":5,"COMPONENTNAME":"ingestor","UPDATEMETRICSLISTNAMEPERIOD":32,"EXPORTERPORT":55679,"DEPLOYMENT":"primary"}
 ingestor['resources'] = {"requests": {"memory": "64Mi","cpu": "50m"},"limits": {"memory": "1Gi","cpu": "500m"}}
-ingestor['liveness'] = {"path":"/liveness","port": 55679}
-ingestor['readyness'] = {"path":"/readyness","port": 55679}
+#ingestor['liveness'] = {"path":"/liveness","port": 55679}
+#ingestor['readyness'] = {"path":"/readyness","port": 55679}
 ingestor['mounts'] = []
 ingestor['volumes'] = []
 #outapi
@@ -90,16 +90,16 @@ manager = {'image':'jdtotow/manager','ports': [{'port':55671,'name':'manager'}]}
 manager['env'] = {"MONGODB_HOST":mongodb_uri,"RABBITMQHOST":rabbitmq_hostname,"URLEXPORTER":"http://localhost:55671","COMPONENTNAME":"manager","NTHREADSCONSUMER":1}
 manager['mounts'] = [] #[{"name":"volume-manager","mountPath":"/config"}]
 manager['volumes'] = [] #[{'name':'volume-manager','persistentVolumeClaim':{'name': 'volume-manager-claim'}}]
-manager['initContainers'] = [{"name": "manager-permission-fix","image": "busybox","command": ["/bin/chmod","-R","777","/data"],"volumeMounts": [{"name": "volume-manager","mountPath": "/data"}]}]
+#manager['initContainers'] = [{"name": "manager-permission-fix","image": "busybox","command": ["/bin/chmod","-R","777","/data"],"volumeMounts": [{"name": "volume-manager","mountPath": "/data"}]}]
 manager['resources'] = {"requests": {"memory": "24Mi","cpu": "25m"},"limits": {"memory": "512Mi","cpu": "500m"}}
-manager['liveness'] = {"path":"/liveness","port": 55671}
-manager['readyness'] = {"path":"/readyness","port": 55671}
+#manager['liveness'] = {"path":"/liveness","port": 55671}
+#manager['readyness'] = {"path":"/readyness","port": 55671}
 #exporter
 exporter = {'image':'jdtotow/exporter','ports': [{'port':55684,'name':'exporter'}]}
 exporter['resources'] = {"requests": {"memory": "24Mi","cpu": "25m"},"limits": {"memory": "512Mi","cpu": "500m"}}
 exporter['env'] = {"RABBITMQHOSTNAME":rabbitmq_hostname}
-exporter['liveness'] = {"path":"/liveness","port": 55684}
-exporter['readyness'] = {"path":"/readyness","port": 55684}
+#exporter['liveness'] = {"path":"/liveness","port": 55684}
+#exporter['readyness'] = {"path":"/readyness","port": 55684}
 exporter['mounts'] = []
 exporter['volumes'] = []
 
@@ -136,8 +136,8 @@ optimizer['volumes'] = []
 
 #grafana 
 grafana = {'image': 'grafana/grafana','ports':[{'port':3000,'name':'grafana'}]}
-grafana['resources'] = {"requests": {"memory": "24Mi","cpu": "50m"},"limits": {"memory": "128Mi","cpu": "500m"}}
-grafana['env'] = {}
+grafana['resources'] = {"requests": {"memory": "64Mi","cpu": "50m"},"limits": {"memory": "2Gi","cpu": "500m"}}
+grafana['env'] = {"GF_AUTH_ANONYMOUS_ENABLED":True}
 grafana['mounts'] = []
 grafana['volumes'] = []
 
@@ -152,7 +152,7 @@ pdp['env'] = {"RABBITMQHOSTNAME":rabbitmq_hostname,"CONFIGFILEPATH":"/config","E
 pdp['resources'] = {"requests": {"memory": "24Mi","cpu": "50m"},"limits": {"memory": "128Mi","cpu": "500m"}}
 pdp['mounts'] = [{"name":"volume-pdp","mountPath":"/config"}]
 pdp['volumes'] = [{'name':'volume-pdp','persistentVolumeClaim':{'name': 'volume-pdp-claim'}}]
-pdp['initContainers'] = [{"name": "pdp-permission-fix","image": "busybox","command": ["/bin/chmod","-R","777","/data"],"volumeMounts": [{"name": "volume-pdp","mountPath": "/data"}]}]
+#pdp['initContainers'] = [{"name": "pdp-permission-fix","image": "busybox","command": ["/bin/chmod","-R","777","/data"],"volumeMounts": [{"name": "volume-pdp","mountPath": "/data"}]}]
 
 #ml
 ml = {'image':'jdtotow/ml'}
@@ -160,7 +160,7 @@ ml['env'] = {"RABBITMQHOST":rabbitmq_hostname}
 ml['mounts'] = [{"name": "ml-volume","mountPath":"/dataset","subPath":""}]
 ml['resources'] = {"requests": {"memory": "24Mi","cpu": "50m"},"limits": {"memory": "128Mi","cpu": "500m"}}
 ml['volumes'] = [{'name':'ml-volume','persistentVolumeClaim':{'name':'ml-volume-claim'}}]
-ml['initContainers'] = [{"name": "ml-volume-permission-fix","image": "busybox","command": ["/bin/chmod","-R","777","/data"],"volumeMounts": [{"name": "ml-volume","mountPath": "/data"}]}]
+#ml['initContainers'] = [{"name": "ml-volume-permission-fix","image": "busybox","command": ["/bin/chmod","-R","777","/data"],"volumeMounts": [{"name": "ml-volume","mountPath": "/data"}]}]
 
 #qos
 qos = {'image':'jdtotow/qos','ports': [{'port':55682,'name':'qos'}]}
@@ -176,7 +176,7 @@ minio['args'] = ['-c','mkdir -p /data/thanos-bucket && /usr/bin/minio server /da
 minio['env'] = {'MINIO_ACCESS_KEY':'smth','MINIO_SECRET_KEY':'Need8Chars'}
 minio['mounts'] = [{"name": "minio-volume","mountPath":"/data","subPath":""}]
 minio['volumes'] = [{'name':'minio-volume','persistentVolumeClaim':{'name':'minio-volume-claim'}}]
-minio['initContainers'] = [{"name": "minio-volume-permission-fix","image": "busybox","command": ["/bin/chmod","-R","777","/data"],"volumeMounts": [{"name": "minio-volume","mountPath": "/data"}]}]
+#minio['initContainers'] = [{"name": "minio-volume-permission-fix","image": "busybox","command": ["/bin/chmod","-R","777","/data"],"volumeMounts": [{"name": "minio-volume","mountPath": "/data"}]}]
 minio['resources'] = {"requests": {"memory": "64Mi","cpu": "50m"},"limits": {"memory": "8256Mi","cpu": "500m"}}
 def get_configs():
     return {'prometheus': prometheus,'compactor':compactor,'gateway':gateway,'minio':minio,'sidecar': sidecar,'querier':querier,'ingestor': ingestor,'outapi': outapi,'slalite': slalite,'exporter': exporter,'optimizer': optimizer,'pdp': pdp,'manager': manager,'ml': ml, 'qos': qos, 'mongodb': mongodb,'rabbitmq':rabbitmq,'rabbitmq_exporter': rabbitmq_exporter,'grafana': grafana,'logstash': logstash}

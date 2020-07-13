@@ -16,12 +16,12 @@ n_tries = int(os.environ.get("NTRIES","10"))
 ml_consumer_queue_name = os.environ.get("MLCONSUMERQUEUENAME","ml_executor")
 manager_queue_name = os.environ.get("MANAGERQUEUENAME","manager")
 #//////////////////////////////////////////////////////////////////////////////
-_evaluation_interval = int(os.environ.get("EVALUATIONINTERVAL","600"))
+_evaluation_interval = int(os.environ.get("EVALUATIONINTERVAL","200"))
 last_all_applications_list_updated = time.time()
 all_applications_list_update_interval = int(os.environ.get("APPLICATIONSLISTUPDATEINTERVAL","400"))
-baskets_evaluation_period = int(os.environ.get("BASKETEVALUATIONPERIOD","20"))
+baskets_evaluation_period = int(os.environ.get("BASKETEVALUATIONPERIOD","300"))
 last_baskets_evaluation = time.time()
-_max_relevant_influencers = int(os.environ.get("MAXNUMBERFEATURE","19"))
+_max_relevant_influencers = int(os.environ.get("MAXNUMBERFEATURE","100"))
 
 class PublisherOnce():
     def __init__(self,exchange,queue,message):
@@ -64,6 +64,8 @@ class ObservedApplication():
         return self.dependencies
     def hasDependency(self,dependency):
         return dependency in self.dependencies
+    def __repr__(self):
+        return json.dumps({'name': self.name, 'dependencies': self.dependencies, 'slo': self.slo})
 
 class ObservedApplicationManager():
     def __init__(self):
@@ -299,8 +301,8 @@ class Basket():
         for time_series in all_time_series:
             if time_series.isSLO():
                 continue
-            if time_series.isConstant():
-                continue
+            #if time_series.isConstant():
+            #    continue
             values = time_series.getValues()
             slo_values = slo_time_serie.getValues()
             if len(slo_values) == 0:

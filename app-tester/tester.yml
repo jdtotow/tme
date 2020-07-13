@@ -11,6 +11,7 @@ spec:
       labels:
         app: tester
     spec:
+      serviceAccountName: tme-operator 
       containers:
       - image: jdtotow/tester
         name: tester

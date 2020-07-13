@@ -31,7 +31,7 @@ class Routine(Thread):
             except Exception as e:
                 log.info(e)
                 error = True
-            if error:
+            if error or pods_list == None:
                 continue
             missing_pods = self.collectMissingPods(pods_list,objects_list)
             if missing_pods != []:

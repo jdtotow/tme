@@ -9,7 +9,11 @@ def startWorkers(max_thread_sender, func, _list):
     pool.close()
 
 def sender(url):
-    requests.get(url)
+    try:
+        requests.get(url)
+    except Exception as e:
+        print("Request not sent")
+        time.sleep(20)
 
 
 def prepareList(_size):
@@ -19,13 +23,13 @@ def prepareList(_size):
     return result
 
 _sleep = 0.01
-_workers = 5
+_workers = 10
 
 up_period = 10
-down_period = 30
+down_period = 10
 
 def high():
-    _size = 10
+    _size = 300
     _start = time.time()
     while True:
         _list = prepareList(_size)

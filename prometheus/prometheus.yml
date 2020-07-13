@@ -50,14 +50,22 @@ scrape_configs:
   static_configs:
   - targets:
     - exporter.${NAMESPACE:default}.svc.cluster.local:55684
-    
+
+- job_name: 'kube-state-metrics'
+  scrape_interval: 30s
+  static_configs:
+  - targets:
+    - kube-state-metrics.tme.svc:8080
+    - kube-state-metrics.tme.svc:8081
+
 - job_name: 'kubernetes-pods'
   kubernetes_sd_configs:
   - role: pod
     namespaces:
       names:
       - tme 
-      - default 
+      - lxs-store 
+      - upm-cep  
   relabel_configs:
   - action: labelmap
     regex: __meta_kubernetes_pod_label_(.+)
@@ -67,3 +75,5 @@ scrape_configs:
   - source_labels: [__meta_kubernetes_pod_name]
     action: replace
     target_label: kubernetes_pod_name
+
+  

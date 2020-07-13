@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request, Response
 import json, requests, time, os
 from prometheus_client.exposition import CONTENT_TYPE_LATEST, generate_latest
-from prom import Collector, MultiCollector
+from prom import Collector, MultiCollector, CollectorV2
 from consumermanager import MultiThreadConsumerManager
 from threading import Thread
 
@@ -17,6 +17,7 @@ exchange = os.environ.get("EXCHANGE","")
 #//////////////////////////////////////////////////////////////////////////////////
 super_metric_dict = {}
 super_labels_dict = {}
+super_list = []
 
 _port = int(os.environ.get("EXPORTERPORT","55684"))
 
@@ -61,9 +62,19 @@ class Manager():
             return None
         if type(_json) == type(""):
             _json = _json[1:-1]
-        metrics = _json['metrics']
-        labels = _json['labels']
-        global super_metric_dict, super_labels_dict
+        metrics = None 
+        labels = None 
+        print(_json)
+        try:
+            metrics = _json['metrics']
+            labels =  _json['labels']
+        except Exception as e:
+            print(e)
+            print("Error getting content")
+        if metrics == None or labels == None:
+            return None
+        global super_metric_dict, super_labels_dict, super_list
+        super_list.append({'metrics': metrics,'labels':labels})
         for k,v in metrics.items():
             super_metric_dict[k] = v
         for k,v in labels.items():
@@ -130,11 +141,13 @@ def home():
 
 @app.route('/metrics',methods=['GET','POST'])
 def getMetrics():
-    global super_labels_dict, super_metric_dict
-    registry = Collector(super_labels_dict,super_metric_dict)
+    global super_labels_dict, super_metric_dict, super_list
+    #registry = Collector(super_labels_dict,super_metric_dict)
+    registry = CollectorV2(super_list)
     collected_metric = generate_latest(registry)
     super_labels_dict.clear()
     super_metric_dict.clear()
+    del super_list[:]
     return Response(collected_metric,status=200,mimetype=CONTENT_TYPE_LATEST)
 
 if __name__ == '__main__':

@@ -1,0 +1,29 @@
+apiVersion: unipi.gr/v1
+kind: TripleMonitoringEngine
+metadata:
+  name: all-components 
+  namespace: tme  
+spec:
+  type: all-tme 
+  interval: 10
+  components:
+    prometheus:
+      name: prometheus-main 
+    querier:
+      name: querier 
+    minio:
+      name: minio 
+    exporter:
+      name: exporter
+    rabbitmq:
+      name: rabbitmq 
+    gateway:
+      name: gateway
+    slalite:
+      name: slalite 
+    manager:
+      name: manager 
+    ingestor:
+      name: ingestor 
+    grafana:
+      name: grafana 

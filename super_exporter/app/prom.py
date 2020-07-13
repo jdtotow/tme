@@ -25,6 +25,22 @@ class Collector(object):
                 else:
                     pass
 
+class CollectorV2(object):
+    def __init__(self,_list_metrics):
+        self._list_metrics = _list_metrics
+    def collect(self):
+        if len(self._list_metrics) > 0:
+            for metric_label in self._list_metrics:
+                metrics = metric_label['metrics']
+                labels = metric_label['labels']
+                for k,v in metrics.items():
+                    metric = Metric(k,k,'gauge')
+                    metric.add_sample(k,value=v,labels=labels)
+                    if metric.samples:
+                        yield metric
+                    else:
+                        pass 
+
 class MultiCollector(object):
     def __init__(self,collections):
         self.collections = collections
