@@ -47,7 +47,7 @@ sidecar = {'image': 'quay.io/thanos/thanos:v0.10.0','ports':thanos_ports}
 sidecar['args'] = ['sidecar','--tsdb.path=/prometheus','--prometheus.url='+prometheus_url,'--grpc-address=0.0.0.0:'+str(sidecar['ports'][0]['port']),'--http-address=0.0.0.0:'+str(sidecar['ports'][1]['port']),'--objstore.config-file=/etc/thanos/bucket_config.yaml']
 sidecar['mounts'] = [{"name": "sidecar-bucket-config","mountPath":"/etc/thanos/bucket_config.yaml","subPath":"bucket_config.yaml"},{"name":"sidecar-volume-prometheus","mountPath":"/prometheus"}]
 sidecar['volumes'] = [{'name':'sidecar-bucket-config','configMap':{'name':'configmap-bucket','key':'bucket_config.yaml','path':'bucket_config.yaml'}},{'name':'sidecar-volume-prometheus','persistentVolumeClaim':{'name': 'sidecar-prometheus-volume-claim'}}]
-sidecar['initContainers'] = [{"name": "sidecar-prometheus-permission-fix","image": "busybox","command": ["/bin/chmod","-R","777","/config"],"volumeMounts": [{"name": "sidecar-volume-prometheus","mountPath": "/config"}]}]
+#sidecar['initContainers'] = [{"name": "sidecar-prometheus-permission-fix","image": "busybox","command": ["/bin/chmod","-R","777","/config"],"volumeMounts": [{"name": "sidecar-volume-prometheus","mountPath": "/config"}]}]
 sidecar['resources'] = {"requests": {"memory": "32Mi","cpu": "50m"},"limits": {"memory": "1Gi","cpu": "500m"}}
 sidecar['env'] = {"NAMESPACE": namespace}
 #thanos querier

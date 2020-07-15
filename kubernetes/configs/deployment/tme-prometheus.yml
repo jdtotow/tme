@@ -6,7 +6,7 @@ metadata:
 spec:
   type: tme-prometheus 
   prometheus:
-    url: prometheus-cluster.default.svc.cluster.local 
+    url: prometheus.wp3-integration-test.svc.cluster.local 
     externals-labels: replicas 
   volume:
     name: volume-prometheus-ks8 

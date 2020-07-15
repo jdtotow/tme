@@ -213,6 +213,7 @@ class Operator():
         if self.register.checkObjectName("querier") == None:
             raise kopf.HandlerFatalError(f"Deploy first a querier type")
         #create sidecar pod 
+        self.api = kubernetes.client.CoreV1Api()
         name = 'sidecar-'+name 
         #pod = {'apiVersion': 'v1', 'metadata': {'name' : name, 'labels': {'app': name}}}
         containers = []
@@ -231,9 +232,10 @@ class Operator():
         # volumes {'name':'sidecar-volume-prometheus','persistentVolumeClaim':{'name': 'sidecar-prometheus-volume-claim'}}
         pod['spec']['containers'][0]['volumeMounts'][1] = {"name": spec['volume']['name'], "mountPath":"/prometheus"}
         pod['spec']['volumes'][1] = {"name": spec['volume']['name'],'persistentVolumeClaim':{'claimName': spec['volume']['claim_name']}}
-        pod['spec']['initContainers'][0]["volumeMounts"][0]["name"] = spec['volume']['name']
+        if _platform == "kubernetes":
+            pod['spec']['initContainers'][0]["volumeMounts"][0]["name"] = spec['volume']['name']
         #creation of a service
-        svc = {'apiVersion': 'v1', 'metadata': {'name' : name}, 'spec': { 'selector': {'app': name}, 'type': 'LoadBalancer'}}
+        svc = {'apiVersion': 'v1', 'metadata': {'name' : name}, 'spec': { 'selector': {'app': name}, 'type': 'ClusterIP'}}
         svc['spec']['ports'] = self.setSvc(self.getConfig("sidecar",'ports'))
         
         _new_service_hostname = name+"."+namespace+".svc.cluster.local:"+ str(svc['spec']['ports'][0]['port'])
@@ -242,7 +244,7 @@ class Operator():
         obj = self.api.create_namespaced_pod(namespace, pod)
         self.register.createKubeObject(_type,pod,"pod",pod['metadata']['name'],body)
         obj = self.api.create_namespaced_service(namespace, svc)
-        self.register.createKubeObject(_type,svc,"svc")
+        self.register.createKubeObject(_type,svc,"svc",pod['metadata']['name'],body)
         #adding new service created to the current querier
         querier_obj = self.register.getKubeObject("querier","pod").getObject()
         global _delete_lock

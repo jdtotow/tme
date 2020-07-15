@@ -5,7 +5,7 @@ metadata:
   namespace: tme  
 spec:
   type: all-tme 
-  interval: 10
+  interval: 5
   components:
     prometheus:
       name: prometheus-main 
