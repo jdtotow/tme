@@ -66,6 +66,7 @@ scrape_configs:
       - tme 
       - lxs-store 
       - upm-cep  
+      - realization 
   relabel_configs:
   - action: labelmap
     regex: __meta_kubernetes_pod_label_(.+)

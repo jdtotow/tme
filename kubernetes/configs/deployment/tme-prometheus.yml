@@ -1,13 +1,13 @@
 apiVersion: unipi.gr/v1
 kind: TripleMonitoringEngine
 metadata:
-  name: prometheus-cluster
+  name: prometheus-realization
   namespace: tme 
 spec:
   type: tme-prometheus 
   prometheus:
-    url: prometheus.wp3-integration-test.svc.cluster.local 
-    externals-labels: replicas 
+    url: http://gdtdefaultapp-prometheussrv-0.realization.svc:9090
+    externals-labels: monitor 
   volume:
     name: volume-prometheus-ks8 
     claim_name: volume-prometheus-ks8-claim 

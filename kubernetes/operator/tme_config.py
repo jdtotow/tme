@@ -52,7 +52,7 @@ sidecar['resources'] = {"requests": {"memory": "32Mi","cpu": "50m"},"limits": {"
 sidecar['env'] = {"NAMESPACE": namespace}
 #thanos querier
 querier = {'image':'quay.io/thanos/thanos:v0.10.0','ports': thanos_ports}
-querier['args'] = ['query','--grpc-address=0.0.0.0:'+str(querier['ports'][0]['port']),'--http-address=0.0.0.0:'+str(querier['ports'][1]['port']),'--query.replica-label=replica','--store='+sidecar_url,'--store='+gateway_url]
+querier['args'] = ['query','--grpc-address=0.0.0.0:'+str(querier['ports'][0]['port']),'--http-address=0.0.0.0:'+str(querier['ports'][1]['port']),'--query.replica-label=monitor','--store='+sidecar_url,'--store='+gateway_url]
 querier['resources'] = {"requests": {"memory": "32Mi","cpu": "50m"},"limits": {"memory": "1Gi","cpu": "500m"}}
 querier['mounts'] = []
 querier['volumes'] = []
