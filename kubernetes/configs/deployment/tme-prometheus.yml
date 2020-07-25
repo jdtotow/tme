@@ -1,7 +1,7 @@
 apiVersion: unipi.gr/v1
 kind: TripleMonitoringEngine
 metadata:
-  name: prometheus-realization
+  name: sidecar-realization
   namespace: tme 
 spec:
   type: tme-prometheus 

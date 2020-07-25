@@ -92,6 +92,7 @@ class Operator():
         self.routine = Routine(self.api, self)
         self.list_pods = []
         self.routine.start()
+        self.querier_service = {}
     def prepareContainer(self,name,_type):
         #name, image,_ports,_args, _env, _mounts, _volumes
         dict_properties = self.loadComponentConfig(name)
@@ -214,7 +215,6 @@ class Operator():
             raise kopf.HandlerFatalError(f"Deploy first a querier type")
         #create sidecar pod 
         self.api = kubernetes.client.CoreV1Api()
-        name = 'sidecar-'+name 
         #pod = {'apiVersion': 'v1', 'metadata': {'name' : name, 'labels': {'app': name}}}
         containers = []
         containers.append(self.prepareContainer('sidecar',_type))
@@ -245,15 +245,20 @@ class Operator():
         self.register.createKubeObject(_type,pod,"pod",pod['metadata']['name'],body)
         obj = self.api.create_namespaced_service(namespace, svc)
         self.register.createKubeObject(_type,svc,"svc",pod['metadata']['name'],body)
+        if _new_service_hostname in self.querier_service:
+            log.info("service already registered in querier")
+            return f"Pod and Service created by TripleMonitoringEngine {name}"
         #adding new service created to the current querier
         querier_obj = self.register.getKubeObject("querier","pod").getObject()
         global _delete_lock
         _delete_lock = True 
         self.api.delete_namespaced_pod("querier", namespace)
         time.sleep(10) #sleep some moment
+        self.api = kubernetes.client.CoreV1Api()
         #'--store='+sidecar_url
         querier_obj['spec']['containers'][0]['args'].append('--store='+_new_service_hostname)
         obj = self.api.create_namespaced_pod(namespace, querier_obj)
+        self.querier_service[_new_service_hostname] = True 
         _delete_lock = False 
         return f"Pod and Service created by TripleMonitoringEngine {name}"
     def deployType(self,_type, body, namespace):
@@ -273,7 +278,7 @@ class Operator():
         #pod creation 
         #self.createPod(pod,namespace,body,_type)
         svcs = [] 
-        time.sleep(5)
+        time.sleep(1)
         if "services" in plan:
             if 'serviceType' in body['spec']:
                 global _service_type
