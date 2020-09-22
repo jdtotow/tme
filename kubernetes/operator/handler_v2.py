@@ -42,6 +42,10 @@ class Register():
         kube_object = KubeObject(name,time.time(),_object,_type,pod_name,body)
         self.collector[_type+"-"+name] = kube_object
         log.info("Object "+ name+" added to register")
+    def updateKubeObject(self,_type,name,new_object):
+        if _type+"-"+name in self.collector:
+            self.collector[_type+"-"+name] = new_object
+            print("Objec "+ name +" updated")
     def getKubeObject(self,name,_type):
         key = _type+"-"+name 
         if key in self.collector:
@@ -239,27 +243,32 @@ class Operator():
         svc['spec']['ports'] = self.setSvc(self.getConfig("sidecar",'ports'))
         
         _new_service_hostname = name+"."+namespace+".svc.cluster.local:"+ str(svc['spec']['ports'][0]['port'])
+        
         kopf.adopt(pod, owner=body)
         kopf.adopt(svc, owner=body)
         obj = self.api.create_namespaced_pod(namespace, pod)
         self.register.createKubeObject(_type,pod,"pod",pod['metadata']['name'],body)
         obj = self.api.create_namespaced_service(namespace, svc)
         self.register.createKubeObject(_type,svc,"svc",pod['metadata']['name'],body)
-        if _new_service_hostname in self.querier_service:
-            log.info("service already registered in querier")
-            return f"Pod and Service created by TripleMonitoringEngine {name}"
-        #adding new service created to the current querier
-        querier_obj = self.register.getKubeObject("querier","pod").getObject()
-        global _delete_lock
-        _delete_lock = True 
-        self.api.delete_namespaced_pod("querier", namespace)
-        time.sleep(10) #sleep some moment
-        self.api = kubernetes.client.CoreV1Api()
-        #'--store='+sidecar_url
-        querier_obj['spec']['containers'][0]['args'].append('--store='+_new_service_hostname)
-        obj = self.api.create_namespaced_pod(namespace, querier_obj)
-        self.querier_service[_new_service_hostname] = True 
-        _delete_lock = False 
+        #----------------------------End of creation ----------------------------------#
+        #--------------------------------Update querier -------------------------------#
+        if not _new_service_hostname in self.querier_service:
+            #adding new service created to the current querier
+            querier_obj = self.register.getKubeObject("querier","pod").getObject()
+            querier_body = self.register.getKubeObject("querier","pod").getBody()
+            #querier_body['spec']['stores'][name] = _new_service_hostname
+            global _delete_lock
+            _delete_lock = True 
+            self.api.delete_namespaced_pod("querier", namespace)
+            print("Sleeping before recreating querier")
+            time.sleep(20)
+            querier_obj['spec']['containers'][0]['args'].append('--store='+_new_service_hostname)
+            kopf.adopt(querier_obj, owner=querier_body)
+            obj = self.api.create_namespaced_pod(namespace, querier_obj)
+            self.register.updateKubeObject("pod","querier",obj)
+            self.querier_service[_new_service_hostname] = True 
+            _delete_lock = False 
+        #-----------------------Creation of prometheus sidecar ------------------------#
         return f"Pod and Service created by TripleMonitoringEngine {name}"
     def deployType(self,_type, body, namespace):
         plan = self.getTypePlan(_type)
@@ -397,7 +406,6 @@ def create_fn(body, spec, **kwargs):
     else:
         (pod,svcs) = operator.deployType(_type,body,namespace)
         kopf.adopt(pod, owner=body)
-
         register.createKubeObject(name,pod,"pod",pod['metadata']['name'],body)
         obj = api.create_namespaced_pod(namespace, pod) 
         if svcs != []:

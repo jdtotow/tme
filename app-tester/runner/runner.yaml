@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: runner
+  namespace: tme 
+spec:
+  containers:
+  - name: runner 
+    image: jdtotow/startqos 

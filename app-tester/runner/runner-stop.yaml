@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: runner_stop_qos
+  namespace: tme 
+spec:
+  selector:
+    matchLabels:
+      app: runner_stop_qos
+  template:
+    metadata:
+      labels:
+        app: runner_stop_qos 
+    spec:
+      containers:
+      - image: jdtotow/runner 
+        name: runner_stop_qos 
+        command: ["/app/stop_qos.sh"]
+        imagePullPolicy: Always
