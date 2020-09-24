@@ -11,7 +11,7 @@ rabbitmq_hostname = "rabbitmq."+namespace+"."+domain
 rabbitmq_ports = [{'name':'server','port':5672},{'port':15672,'name':'console'}]
 rabbitmq_url = "http://" + rabbitmq_hostname + ":" + str(rabbitmq_ports[1]['port'])
 rabbitmq_username = "richardm"
-rabbitmq_password = "bigdatastack"
+rabbitmq_password = "bigdatastack" 
 #///////////////////////////////////////////////////////////////////////////////////////////////
 mongodb_hostname = "mongodb."+namespace+"."+domain
 mongodb_port = [{'port':27017,'name':'mongodb'}]
@@ -142,8 +142,8 @@ grafana['mounts'] = []
 grafana['volumes'] = []
 
 #slalite
-slalite = {'image': 'fermenreq/slalite:test','ports':[{'port': 8090,'name':'slalite'}]}
-slalite['env'] = {'RABBITMQ_HOSTNAME': rabbitmq_hostname,'RABBITMQ_USER': rabbitmq_username,'RABBITMQ_PASS': rabbitmq_password}
+slalite = {'image': 'ct2cania/slalite','ports':[{'port': 8090,'name':'slalite'}]}
+slalite['env'] = {'RABBITMQ_HOSTNAME': rabbitmq_hostname,'RABBITMQ_PORT':rabbitmq_ports[0]['port'],'RABBITMQ_USER': rabbitmq_username,'RABBITMQ_PASS': rabbitmq_password,'SLA_CHECKPERIOD':20}
 slalite['mounts'] = []
 slalite['volumes'] = []
 #pdp

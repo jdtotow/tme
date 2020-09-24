@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tester
+  namespace: tme 
+spec:
+  selector:
+    matchLabels:
+      app: tester
+  template:
+    metadata:
+      labels:
+        app: tester
+    spec:
+      containers:
+      - image: jdtotow/tester:latest 
+        name: tester
+        imagePullPolicy: Always
+        env:
+        - name: RECOMMENDER_HOSTNAME
+          value: "grssr-srv-recommender-0.realization.svc.cluster.local"

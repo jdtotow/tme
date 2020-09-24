@@ -1,29 +1,29 @@
 {
-    "id": "a03",
-    "name": "grssr-recommender-0",
+    "id": "a04",
+    "name": "grssr-recommender",
     "state": "started",
     "details":{
-        "id": "a03",
+        "id": "a04",
         "type": "agreement",
-        "name": "grssr-recommender-0",
+        "name": "grssr-recommender",
         "provider": { "id": "mf2c", "name": "mF2C Platform" },
         "client": { "id": "c02", "name": "A client" },
         "creation": "2019-01-16T17:09:45Z",
-        "expiration": "2020-11-13T10:25:45Z",
-        "messages":1,
-        "frequency":60,
+        "expiration": "2020-12-31T23:59:59Z",
+        "messages": 1,
+        "frequency": 60,
         "guarantees": [
             {
-                "name": "responseTime",
-                "constraint": "[responseTime] > 150",
+                "name": "costPerHour",
+                "constraint": "[costPerHour] < 0.030",
                 "importance": [
                         {
                                 "Name": "Mild",
-                                "Constraint": " > 150"
+                                "Constraint": " > 0.030"
                         },
                         {
                                 "Name": "Serious",
-                                "Constraint": " > 200"
+                                "Constraint": " > 0.040"
                         }
                 ]
             }

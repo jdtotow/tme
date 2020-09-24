@@ -1,0 +1,13 @@
+apiVersion: unipi.gr/v1
+kind: TripleMonitoringEngine
+metadata:
+  name: sidecar-cep
+  namespace: tme 
+spec:
+  type: tme-prometheus 
+  prometheus:
+    url: http://upmcepmaster.upm-cep.svc:9090
+    externals-labels: monitor 
+  volume:
+    name: volume-prometheus-cep  
+    claim_name: volume-prometheus-cep-claim 

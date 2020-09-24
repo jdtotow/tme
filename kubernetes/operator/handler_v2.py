@@ -132,6 +132,8 @@ class Operator():
         if _readyness != None:
             container['readynessProbe'] = self.prepareLivenessOrReadyness(_readyness)
         return container
+    def podCanBeCreated(self, name):
+        return name not in self.list_pods
     def getPodsList(self):
         if _delete_lock:
             return None 
@@ -228,31 +230,33 @@ class Operator():
         containers_wrapper = {'containers': containers}
         plan = {'containers': ['sidecar']}
         pod = self.preparePod(name,plan,containers_wrapper)
+        _new_service_hostname = ""
         #replace prometheus.url value by the provided
-        pod['spec']['containers'][0]['args'][2] = '--prometheus.url='+ spec['prometheus']['url']
-        pod['spec']['serviceAccountName'] = sa 
-        #replace mounts and volumes 
-        # mounts {"name":"sidecar-volume-prometheus","mountPath":"/prometheus"}
-        # volumes {'name':'sidecar-volume-prometheus','persistentVolumeClaim':{'name': 'sidecar-prometheus-volume-claim'}}
-        pod['spec']['containers'][0]['volumeMounts'][1] = {"name": spec['volume']['name'], "mountPath":"/prometheus"}
-        pod['spec']['volumes'][1] = {"name": spec['volume']['name'],'persistentVolumeClaim':{'claimName': spec['volume']['claim_name']}}
-        if _platform == "kubernetes":
-            pod['spec']['initContainers'][0]["volumeMounts"][0]["name"] = spec['volume']['name']
-        #creation of a service
-        svc = {'apiVersion': 'v1', 'metadata': {'name' : name}, 'spec': { 'selector': {'app': name}, 'type': 'ClusterIP'}}
-        svc['spec']['ports'] = self.setSvc(self.getConfig("sidecar",'ports'))
-        
-        _new_service_hostname = name+"."+namespace+".svc.cluster.local:"+ str(svc['spec']['ports'][0]['port'])
-        
-        kopf.adopt(pod, owner=body)
-        kopf.adopt(svc, owner=body)
-        obj = self.api.create_namespaced_pod(namespace, pod)
-        self.register.createKubeObject(_type,pod,"pod",pod['metadata']['name'],body)
-        obj = self.api.create_namespaced_service(namespace, svc)
-        self.register.createKubeObject(_type,svc,"svc",pod['metadata']['name'],body)
+        if operator.podCanBeCreated(pod['metadata']['name']):
+            pod['spec']['containers'][0]['args'][2] = '--prometheus.url='+ spec['prometheus']['url']
+            pod['spec']['serviceAccountName'] = sa 
+            #replace mounts and volumes 
+            # mounts {"name":"sidecar-volume-prometheus","mountPath":"/prometheus"}
+            # volumes {'name':'sidecar-volume-prometheus','persistentVolumeClaim':{'name': 'sidecar-prometheus-volume-claim'}}
+            pod['spec']['containers'][0]['volumeMounts'][1] = {"name": spec['volume']['name'], "mountPath":"/prometheus"}
+            pod['spec']['volumes'][1] = {"name": spec['volume']['name'],'persistentVolumeClaim':{'claimName': spec['volume']['claim_name']}}
+            if _platform == "kubernetes":
+                pod['spec']['initContainers'][0]["volumeMounts"][0]["name"] = spec['volume']['name']
+            #creation of a service
+            svc = {'apiVersion': 'v1', 'metadata': {'name' : name}, 'spec': { 'selector': {'app': name}, 'type': 'ClusterIP'}}
+            svc['spec']['ports'] = self.setSvc(self.getConfig("sidecar",'ports'))
+            _new_service_hostname = name+"."+namespace+".svc.cluster.local:"+ str(svc['spec']['ports'][0]['port'])
+            kopf.adopt(pod, owner=body)
+            kopf.adopt(svc, owner=body)
+            obj = self.api.create_namespaced_pod(namespace, pod)
+            self.register.createKubeObject(_type,pod,"pod",pod['metadata']['name'],body)
+            obj = self.api.create_namespaced_service(namespace, svc)
+            self.register.createKubeObject(_type,svc,"svc",pod['metadata']['name'],body)
+        else:
+            log.info("Pod <<"+pod['metadata']['name']+">> already exists")
         #----------------------------End of creation ----------------------------------#
         #--------------------------------Update querier -------------------------------#
-        if not _new_service_hostname in self.querier_service:
+        if (not _new_service_hostname == "") and (not _new_service_hostname in self.querier_service):
             #adding new service created to the current querier
             querier_obj = self.register.getKubeObject("querier","pod").getObject()
             querier_body = self.register.getKubeObject("querier","pod").getBody()
@@ -260,8 +264,8 @@ class Operator():
             global _delete_lock
             _delete_lock = True 
             self.api.delete_namespaced_pod("querier", namespace)
-            print("Sleeping before recreating querier")
-            time.sleep(20)
+            log.info("Sleeping before recreating querier")
+            time.sleep(2)
             querier_obj['spec']['containers'][0]['args'].append('--store='+_new_service_hostname)
             kopf.adopt(querier_obj, owner=querier_body)
             obj = self.api.create_namespaced_pod(namespace, querier_obj)
@@ -269,7 +273,7 @@ class Operator():
             self.querier_service[_new_service_hostname] = True 
             _delete_lock = False 
         #-----------------------Creation of prometheus sidecar ------------------------#
-        return f"Pod and Service created by TripleMonitoringEngine {name}"
+        return {"message": f"Pod and Service created by TripleMonitoringEngine {name}"}
     def deployType(self,_type, body, namespace):
         plan = self.getTypePlan(_type)
         if plan == None:
@@ -376,6 +380,7 @@ operator = Operator(register)
 @kopf.on.create('unipi.gr', 'v1', 'triplemonitoringengines')
 def create_fn(body, spec, **kwargs):
     # Get info from Database object
+    operator.getPodsList()
     name = body['metadata']['name']
     namespace = body['metadata']['namespace']
     _type = spec['type']
@@ -405,6 +410,9 @@ def create_fn(body, spec, **kwargs):
             time.sleep(interval)
     else:
         (pod,svcs) = operator.deployType(_type,body,namespace)
+        if not operator.podCanBeCreated(pod['metadata']['name']):
+            log.info("pod <<"+pod['metadata']['name']+">> already exists")
+            return {"message": "End process, pod service creation"}
         kopf.adopt(pod, owner=body)
         register.createKubeObject(name,pod,"pod",pod['metadata']['name'],body)
         obj = api.create_namespaced_pod(namespace, pod) 
