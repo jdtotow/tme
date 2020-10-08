@@ -136,7 +136,7 @@ optimizer['volumes'] = []
 
 #grafana 
 grafana = {'image': 'grafana/grafana','ports':[{'port':3000,'name':'grafana'}]}
-grafana['resources'] = {"requests": {"memory": "64Mi","cpu": "50m"},"limits": {"memory": "2Gi","cpu": "500m"}}
+grafana['resources'] = {"requests": {"memory": "64Mi","cpu": "50m"},"limits": {"memory": "16Gi","cpu": "500m"}}
 grafana['env'] = {"GF_AUTH_ANONYMOUS_ENABLED":True}
 grafana['mounts'] = []
 grafana['volumes'] = []

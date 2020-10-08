@@ -1,5 +1,6 @@
 import kopf, kubernetes, yaml, tme_config, time, logging, os 
 from routine import Routine 
+from startquerier import RestartQuerier
 
 configs = tme_config.get_configs()
 dict_properties = {}
@@ -134,6 +135,9 @@ class Operator():
         return container
     def podCanBeCreated(self, name):
         return name not in self.list_pods
+    def unclockPodListCollection(self):
+        global _delete_lock
+        _delete_lock = False 
     def getPodsList(self):
         if _delete_lock:
             return None 
@@ -256,6 +260,7 @@ class Operator():
             log.info("Pod <<"+pod['metadata']['name']+">> already exists")
         #----------------------------End of creation ----------------------------------#
         #--------------------------------Update querier -------------------------------#
+        """
         if (not _new_service_hostname == "") and (not _new_service_hostname in self.querier_service):
             #adding new service created to the current querier
             querier_obj = self.register.getKubeObject("querier","pod").getObject()
@@ -264,16 +269,24 @@ class Operator():
             global _delete_lock
             _delete_lock = True 
             self.api.delete_namespaced_pod("querier", namespace)
-            log.info("Sleeping before recreating querier")
-            time.sleep(2)
             querier_obj['spec']['containers'][0]['args'].append('--store='+_new_service_hostname)
-            kopf.adopt(querier_obj, owner=querier_body)
-            obj = self.api.create_namespaced_pod(namespace, querier_obj)
-            self.register.updateKubeObject("pod","querier",obj)
+            #kopf.adopt(querier_obj, owner=querier_body)
+            #obj = self.api.create_namespaced_pod(namespace, querier_obj)
+            #self.register.updateKubeObject("pod","querier",obj)
+            querier_restarter = RestartQuerier(kopf,querier_obj,querier_body,self.register,30,namespace,self)
+            querier_restarter.start()
             self.querier_service[_new_service_hostname] = True 
-            _delete_lock = False 
+        """
         #-----------------------Creation of prometheus sidecar ------------------------#
         return {"message": f"Pod and Service created by TripleMonitoringEngine {name}"}
+    def addOthersStoresQuerier(self,body,container):
+        if "stores" in body["spec"]:
+            components = body["spec"]["stores"].keys()
+            for component in components:
+                url = body["spec"]["stores"][component]["url"]
+                if not '--store='+url in container['args']:
+                    container['args'].append('--store=' + url)
+        return container
     def deployType(self,_type, body, namespace):
         plan = self.getTypePlan(_type)
         if plan == None:
@@ -281,7 +294,9 @@ class Operator():
         #making containers
         containers = []
         for container_name in plan["containers"]:
-            containers.append(self.prepareContainer(container_name,_type))
+            container = self.prepareContainer(container_name,_type)
+            container = self.addOthersStoresQuerier(body,container)
+            containers.append(container)
         pod_name = plan["name"]
         sa = 'default'
         if 'serviceAccountName' in body['spec']:

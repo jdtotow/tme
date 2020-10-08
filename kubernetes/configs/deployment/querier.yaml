@@ -5,4 +5,12 @@ metadata:
 spec:
   type: querier  
   stores: 
-    default: prometheus 
+    realization:
+      url: "sidecar-realization.tme.svc.cluster.local:10091"
+      externals-labels: monitor
+    cepupm:
+      url: "sidecar-cep.tme.svc.cluster.local:10091"
+      externals-labels: monitor
+    istio:
+      url: "sidecar-istio.tme.svc.cluster.local:10091"
+      externals-labels: monitor 

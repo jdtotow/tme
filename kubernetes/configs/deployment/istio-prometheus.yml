@@ -1,0 +1,13 @@
+apiVersion: unipi.gr/v1
+kind: TripleMonitoringEngine
+metadata:
+  name: sidecar-istio
+  namespace: tme 
+spec:
+  type: tme-prometheus 
+  prometheus:
+    url: http://prom.wp3-integration-test.svc:9091
+    externals-labels: monitor 
+  volume:
+    name: volume-prometheus-istio  
+    claim_name: volume-prometheus-istio-claim 

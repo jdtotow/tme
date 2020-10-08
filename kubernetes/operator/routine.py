@@ -29,11 +29,13 @@ class Routine(Thread):
             error = False
             try:
                 pods_list = self.handler.getPodsList()
+                if pods_list == None: #method lock by the main thread
+                    continue
                 objects_list = self.handler.getAllObjects()
             except Exception as e:
                 log.info(e)
                 error = True
-            if error or pods_list == None:
+            if error:
                 continue
             missing_pods = self.collectMissingPods(pods_list,objects_list)
             if missing_pods != []:

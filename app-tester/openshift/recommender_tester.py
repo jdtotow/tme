@@ -23,7 +23,7 @@ def prepareList(_size):
     return result
 
 _sleep = 0.01
-_workers = 60
+_workers = 100
 
 up_period = 10
 down_period = 5
