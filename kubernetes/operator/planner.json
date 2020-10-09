@@ -43,6 +43,11 @@
             "services": ["slalite"]
         },
         {
+            "type":"slaliteentrypoint",
+            "name":"slaliteentrypoint",
+            "containers":["slaliteentrypoint"]
+        },
+        {
             "type": "ingestor",
             "name": "ingestor",
             "containers": ["ingestor"],

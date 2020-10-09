@@ -29,12 +29,7 @@ class Worker(Thread):
         except Exception as e:
             print("Error while trying to connect")
             print(e)
-            self.connection_state = False 
-            if self.connection:
-                self.connection.close()
-            print("Sleep, auto connection in 2s")
-            time.sleep(2)
-            self.connect()
+            
     def startConsuming(self):
         try:
             self.channel.start_consuming()
@@ -59,15 +54,15 @@ class Worker(Thread):
         self.channel.basic_ack(method.delivery_tag)
     def run(self):
         index = 0
-        while index < self.n_tries:
+        while True:
             try:
                 self.connect()
                 break 
             except Exception as e:
                 print(e)
                 index +=1
-                print("Worker will sleep for 10s")
-                time.sleep(10)
+                print("Worker will sleep for 20s")
+                time.sleep(20)
         if self.connection_state:
             print("Worker start to consume")
             self.startConsuming()

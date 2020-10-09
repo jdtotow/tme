@@ -1,6 +1,6 @@
-FROM jdtotow/monitoring:2
-MAINTAINER Jean-Didier Totow <totow@unipi.gr>
-RUN pip install numpy dtw
+FROM python:3 
+RUN pip install --upgrade pip
+RUN pip install numpy dtw requests prometheus_client pika 
 COPY src/ /app
 RUN mkdir /config
 RUN touch /config/config.json 

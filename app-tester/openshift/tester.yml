@@ -13,7 +13,7 @@ spec:
         app: tester
     spec:
       containers:
-      - image: jdtotow/tester:latest 
+      - image: jdtotow/tester
         name: tester
         imagePullPolicy: Always
         env:

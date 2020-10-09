@@ -28,13 +28,9 @@ class Worker(Thread):
     def startConsuming(self):
         try:
             self.channel.start_consuming()
-        except:
-            print("Consumer thread failed, restart in 10s...")
-            if self.connection:
-                self.connection.close()
-                time.sleep(10)
-                self.connect()
-                self.startConsuming()
+        except Exception as e:
+            print("Error while trying to connect")
+            print(e)
     def stop(self):
         self.normal_stop = True 
     def callback(self,channel, method, header, body):
@@ -45,16 +41,14 @@ class Worker(Thread):
             self.channel.stop_consuming()
         self.channel.basic_ack(method.delivery_tag)
     def run(self):
-        index = 0
-        while index < self.n_tries:
+        while True:
             try:
                 self.connect()
                 break 
             except Exception as e:
                 print(e)
-                index +=1
-                print("Worker will sleep for 2s")
-                time.sleep(2)
+                print("Worker will sleep for 20s")
+                time.sleep(20)
         if self.connection_state:
             print("Worker start to consume")
             self.startConsuming()

@@ -214,7 +214,7 @@ services:
   #    - 27017:27017
   
   slalite:
-    image: fermenreq/slalite:test
+    image: ct2cania/slalite
     networks: 
       - monitoring
     container_name: slalite

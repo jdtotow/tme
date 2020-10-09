@@ -5,7 +5,7 @@ recommender_url = "http://"+base_url+":7070/recommendations?customerId=1&limit=3
 
 def startWorkers(max_thread_sender, func, _list):
     pool = multiprocessing.pool.ThreadPool(processes=max_thread_sender)
-    pool.map(func,_list,chunksize=50)
+    pool.map(func,_list,chunksize=1)
     pool.close()
 
 def sender(url):
@@ -23,13 +23,13 @@ def prepareList(_size):
     return result
 
 _sleep = 0.01
-_workers = 100
+_workers = 200
 
 up_period = 10
 down_period = 5
 
 def high():
-    _size = 30000
+    _size = 300000
     _start = time.time()
     while True:
         _list = prepareList(_size)

@@ -25,6 +25,7 @@ logstash_hostname = "logstash."+namespace+"."+domain
 #///////////////////////////////////////////////////////////////////////////////////////////////
 thanos_ports = [{'port':10091,'name':'grpc'},{'port': 10902,'name':'http'}]
 sidecar_hostname = "sidecar."+namespace+"."+domain
+slalite_hostname = "slalite."+namespace+"."+domain 
 sidecar_url = sidecar_hostname+":"+str(thanos_ports[0]['port'])
 gateway_hostname = "gateway."+namespace+"."+domain
 gateway_url = gateway_hostname+":"+str(thanos_ports[0]['port'])
@@ -146,6 +147,14 @@ slalite = {'image': 'ct2cania/slalite','ports':[{'port': 8090,'name':'slalite'}]
 slalite['env'] = {'RABBITMQ_HOSTNAME': rabbitmq_hostname,'RABBITMQ_PORT':rabbitmq_ports[0]['port'],'RABBITMQ_USER': rabbitmq_username,'RABBITMQ_PASS': rabbitmq_password,'SLA_CHECKPERIOD':20}
 slalite['mounts'] = []
 slalite['volumes'] = []
+#slalite entrypoint
+"""
+RABBITMQ_USER=richardm --env RABBITMQ_PASS=bigdatastack --env RABBITMQ_HOSTNAME=rabbitmq --env SLALITE_HOSTNAME=slalite --env SLALITE_PORT=8090
+"""
+slaliteentrypoint = {'image': 'ct2cania/slalite-entrypoint','ports':[{'port': 8090,'name':'slalite'}]}
+slaliteentrypoint['env'] = {'RABBITMQ_HOSTNAME': rabbitmq_hostname,'SLALITE_HOSTNAME':slalite_hostname,'SLALITE_PORT':8090,'RABBITMQ_PORT':rabbitmq_ports[0]['port'],'RABBITMQ_USER': rabbitmq_username,'RABBITMQ_PASS': rabbitmq_password,'SLA_CHECKPERIOD':20}
+slaliteentrypoint['mounts'] = []
+slaliteentrypoint['volumes'] = []
 #pdp
 pdp = {'image':'jdtotow/pdp'}
 pdp['env'] = {"RABBITMQHOSTNAME":rabbitmq_hostname,"CONFIGFILEPATH":"/config","EVALUATIONINTERVAL":60}
@@ -179,7 +188,7 @@ minio['volumes'] = [{'name':'minio-volume','persistentVolumeClaim':{'name':'mini
 #minio['initContainers'] = [{"name": "minio-volume-permission-fix","image": "busybox","command": ["/bin/chmod","-R","777","/data"],"volumeMounts": [{"name": "minio-volume","mountPath": "/data"}]}]
 minio['resources'] = {"requests": {"memory": "64Mi","cpu": "50m"},"limits": {"memory": "8256Mi","cpu": "500m"}}
 def get_configs():
-    return {'prometheus': prometheus,'compactor':compactor,'gateway':gateway,'minio':minio,'sidecar': sidecar,'querier':querier,'ingestor': ingestor,'outapi': outapi,'slalite': slalite,'exporter': exporter,'optimizer': optimizer,'pdp': pdp,'manager': manager,'ml': ml, 'qos': qos, 'mongodb': mongodb,'rabbitmq':rabbitmq,'rabbitmq_exporter': rabbitmq_exporter,'grafana': grafana,'logstash': logstash}
+    return {'prometheus': prometheus,'compactor':compactor,'gateway':gateway,'minio':minio,'sidecar': sidecar,'querier':querier,'ingestor': ingestor,'outapi': outapi,'slalite': slalite,'exporter': exporter,'optimizer': optimizer,'pdp': pdp,'manager': manager,'ml': ml, 'qos': qos, 'mongodb': mongodb,'rabbitmq':rabbitmq,'rabbitmq_exporter': rabbitmq_exporter,'grafana': grafana,'logstash': logstash,'slaliteentrypoint':slaliteentrypoint}
 
 def loadPlanner():
     _file = None
