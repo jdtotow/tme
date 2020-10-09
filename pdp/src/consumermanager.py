@@ -27,7 +27,7 @@ class Worker(Thread):
             self.channel.basic_consume(queue=self.queue,on_message_callback=self.callback)
             self.connection_state = True 
         except Exception as e:
-            print("Error while trying to connect")
+            print("Error while connection")
             print(e)
             
     def startConsuming(self):

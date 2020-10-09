@@ -571,7 +571,7 @@ class Manager():
          
 def main():
     manager = Manager()
-    rabbitmq = MultiThreadConsumerManager(1,rabbitmq_username,rabbitmq_password,rabbitmq_host,rabbitmq_port,10,"",manager,consumer_queue_name)
+    rabbitmq = MultiThreadConsumerManager(2,rabbitmq_username,rabbitmq_password,rabbitmq_host,rabbitmq_port,10,"",manager,consumer_queue_name)
     connected = False
     index = 0
     while not connected:
