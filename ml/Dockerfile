@@ -1,6 +1,6 @@
 FROM python:3 
 RUN pip install --upgrade pip
-RUN pip install pika prometheus_client requests 
+RUN pip install pika prometheus_client requests python-dateutil
 #RUN python -m pip install statsmodels
 COPY src/ /app
 RUN mkdir /config /dataset 

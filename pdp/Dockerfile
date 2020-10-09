@@ -1,6 +1,6 @@
 FROM python:3 
 RUN pip install --upgrade pip
-RUN pip install numpy dtw requests prometheus_client pika 
+RUN pip install numpy dtw requests prometheus_client pika python-dateutil
 COPY src/ /app
 RUN mkdir /config
 RUN touch /config/config.json 
