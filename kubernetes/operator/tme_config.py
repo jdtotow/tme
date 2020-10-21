@@ -163,6 +163,12 @@ pdp['mounts'] = [{"name":"volume-pdp","mountPath":"/config"}]
 pdp['volumes'] = [{'name':'volume-pdp','persistentVolumeClaim':{'name': 'volume-pdp-claim'}}]
 #pdp['initContainers'] = [{"name": "pdp-permission-fix","image": "busybox","command": ["/bin/chmod","-R","777","/data"],"volumeMounts": [{"name": "volume-pdp","mountPath": "/data"}]}]
 
+#pushgateway
+pushgateway = {'image':'prom/pushgateway','ports':[{'port': 9100,'name':'push'}]}
+pushgateway['resources'] = {"requests": {"memory": "24Mi","cpu": "50m"},"limits": {"memory": "128Mi","cpu": "500m"}}
+pushgateway['mounts'] = []
+pushgateway['volumes'] = []
+
 #ml
 ml = {'image':'jdtotow/ml'}
 ml['env'] = {"RABBITMQHOST":rabbitmq_hostname}
@@ -188,7 +194,7 @@ minio['volumes'] = [{'name':'minio-volume','persistentVolumeClaim':{'name':'mini
 #minio['initContainers'] = [{"name": "minio-volume-permission-fix","image": "busybox","command": ["/bin/chmod","-R","777","/data"],"volumeMounts": [{"name": "minio-volume","mountPath": "/data"}]}]
 minio['resources'] = {"requests": {"memory": "64Mi","cpu": "50m"},"limits": {"memory": "8256Mi","cpu": "500m"}}
 def get_configs():
-    return {'prometheus': prometheus,'compactor':compactor,'gateway':gateway,'minio':minio,'sidecar': sidecar,'querier':querier,'ingestor': ingestor,'outapi': outapi,'slalite': slalite,'exporter': exporter,'optimizer': optimizer,'pdp': pdp,'manager': manager,'ml': ml, 'qos': qos, 'mongodb': mongodb,'rabbitmq':rabbitmq,'rabbitmq_exporter': rabbitmq_exporter,'grafana': grafana,'logstash': logstash,'slaliteentrypoint':slaliteentrypoint}
+    return {'prometheus': prometheus,'compactor':compactor,'gateway':gateway,'minio':minio,'sidecar': sidecar,'querier':querier,'ingestor': ingestor,'outapi': outapi,'slalite': slalite,'exporter': exporter,'optimizer': optimizer,'pdp': pdp,'manager': manager,'ml': ml, 'qos': qos, 'mongodb': mongodb,'rabbitmq':rabbitmq,'rabbitmq_exporter': rabbitmq_exporter,'grafana': grafana,'logstash': logstash,'slaliteentrypoint':slaliteentrypoint,'pushgateway':pushgateway}
 
 def loadPlanner():
     _file = None

@@ -76,6 +76,12 @@
             "name": "grafana",
             "containers": ["grafana"],
             "services": ["grafana"]
+        },
+        {
+            "type":"pushgateway",
+            "name":"pushgateway",
+            "containers":["pushgateway"],
+            "services":["pushgateway"]
         }
     ]
 }

@@ -1,0 +1,7 @@
+apiVersion: unipi.gr/v1
+kind: TripleMonitoringEngine
+metadata:
+  name: pushgateway  
+spec:
+  serviceAccountName: tme-operator 
+  type: pushgateway 
