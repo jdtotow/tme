@@ -1,5 +1,4 @@
 FROM jdtotow/monitoring:2
-MAINTAINER Jean-Didier Totow <totow@unipi.gr>
 RUN pip install numpy 
 COPY app/ /app
 RUN mkdir /config

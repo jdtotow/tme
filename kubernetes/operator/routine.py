@@ -11,6 +11,7 @@ class Routine(Thread):
         self.api = api 
         self.handler = handler
         super(Routine, self).__init__()
+        
     def collectMissingPods(self,_list_pods, _list_tme):
         #print(_list_pods)
         #print(_list_tme)

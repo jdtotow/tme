@@ -7,14 +7,15 @@ prometheus_hostname = "localhost" #"prometheus-main."+namespace+"."+domain
 prometheus_port = [{'port':9090,'name':'api'}]
 prometheus_url = "http://" + prometheus_hostname + ":" + str(prometheus_port[0]['port'])
 #///////////////////////////////////////////////////////////////////////////////////////////////
-rabbitmq_hostname = "rabbitmq."+namespace+"."+domain 
+rabbitmq_hostname = "rabbitmq."+namespace+"."+domain
 rabbitmq_ports = [{'name':'server','port':5672},{'port':15672,'name':'console'}]
 rabbitmq_url = "http://" + rabbitmq_hostname + ":" + str(rabbitmq_ports[1]['port'])
 rabbitmq_username = "richardm"
-rabbitmq_password = "bigdatastack" 
+rabbitmq_password = "bigdatastack"
 #///////////////////////////////////////////////////////////////////////////////////////////////
 mongodb_hostname = "mongodb."+namespace+"."+domain
 mongodb_port = [{'port':27017,'name':'mongodb'}]
+pushgateway_port = [{'port': 9091,'name':'pushgateway'}]
 mongodb_uri = mongodb_hostname + ":" + str(mongodb_port[0]['port'])
 mongodb_username = "uprc"
 mongodb_password = "bigdatastack"
@@ -25,7 +26,7 @@ logstash_hostname = "logstash."+namespace+"."+domain
 #///////////////////////////////////////////////////////////////////////////////////////////////
 thanos_ports = [{'port':10091,'name':'grpc'},{'port': 10902,'name':'http'}]
 sidecar_hostname = "sidecar."+namespace+"."+domain
-slalite_hostname = "slalite."+namespace+"."+domain 
+slalite_hostname = "slalite."+namespace+"."+domain
 sidecar_url = sidecar_hostname+":"+str(thanos_ports[0]['port'])
 gateway_hostname = "gateway."+namespace+"."+domain
 gateway_url = gateway_hostname+":"+str(thanos_ports[0]['port'])
@@ -34,8 +35,9 @@ querier_url = "http://querier."+namespace+"."+domain+":"+str(thanos_ports[1]['po
 minio_ports = [{'port':9000,'name': 'service'}]
 minio_hostname = "minio."+namespace+"."+domain
 minio_url = minio_hostname+":"+ str(minio_ports[0]['port'])
-
-#Prometheus config 
+#pushgateway_url = "http://pushgateway"+namespace+"."+domain #+":"+str(pushgateway_port[0]['port'])
+pushgateway_url = 'http://pushgateway.tme.svc.cluster.local:9091'
+#Prometheus config
 prometheus = {'image': 'prom/prometheus','ports': prometheus_port}
 prometheus['env'] = {"NAMESPACE": namespace}
 prometheus['args'] = ["--config.file=/etc/prometheus/prometheus.yml","--storage.tsdb.path=/prometheus","--web.console.libraries=/etc/prometheus/console_libraries","--storage.tsdb.max-block-duration=2h","--storage.tsdb.min-block-duration=2h","--web.console.templates=/etc/prometheus/consoles","--web.enable-lifecycle"]
@@ -58,21 +60,21 @@ querier['resources'] = {"requests": {"memory": "32Mi","cpu": "50m"},"limits": {"
 querier['mounts'] = []
 querier['volumes'] = []
 querier['env'] = {}
-#thanos gateway 
+#thanos gateway
 gateway = {'image':'quay.io/thanos/thanos:v0.10.0','ports': thanos_ports}
 gateway['args'] = ['store','--grpc-address=0.0.0.0:'+str(gateway['ports'][0]['port']),'--http-address=0.0.0.0:'+str(gateway['ports'][1]['port']),'--data-dir=/tmp/thanos/store','--objstore.config-file=/etc/thanos/bucket_config.yaml']
 gateway['mounts'] = [{"name": "sidecar-bucket-config","mountPath":"/etc/thanos/bucket_config.yaml","subPath":"bucket_config.yaml"}]
 gateway['volumes'] = [{'name':'sidecar-bucket-config','configMap':{'name':'configmap-bucket','key':'bucket_config.yaml','path':'bucket_config.yaml'}}]
 gateway['resources'] = {"requests": {"memory": "32Mi","cpu": "25m"},"limits": {"memory": "1Gi","cpu": "500m"}}
 gateway['env'] = {"NAMESPACE": namespace}
-#thanos compactor 
+#thanos compactor
 compactor = {'image':'quay.io/thanos/thanos:v0.10.0','ports': thanos_ports}
 compactor['env'] = {"NAMESPACE": namespace}
 compactor['mounts'] = [{"name": "sidecar-bucket-config","mountPath":"/etc/thanos/bucket_config.yaml","subPath":"bucket_config.yaml"}]
 compactor['volumes'] = [{'name':'sidecar-bucket-config','configMap':{'name':'configmap-bucket','key':'bucket_config.yaml','path':'bucket_config.yaml'}}]
 compactor['args'] = ['compact','--log.level=debug','--data-dir=/data','--objstore.config-file=/etc/thanos/bucket_config.yaml','--wait']
 compactor['resources'] = {"requests": {"memory": "32Mi","cpu": "25m"},"limits": {"memory": "1Gi","cpu": "500m"}}
-#PrometheusBeat config 
+#PrometheusBeat config
 ingestor = {'image': 'jdtotow/prometheusbeat','ports': [{'port':55679,'name':'master'}]}
 ingestor['env'] = {"PROMETHEUS_URL_API":querier_url,"RABBITMQ_PORT": rabbitmq_ports[0]['port'],"EXPORTER_URL":"http://localhost:55679","RABBITMQ_HOST":rabbitmq_hostname,"SLEEP":5,"COMPONENTNAME":"ingestor","UPDATEMETRICSLISTNAMEPERIOD":32,"EXPORTERPORT":55679,"DEPLOYMENT":"primary"}
 ingestor['resources'] = {"requests": {"memory": "64Mi","cpu": "50m"},"limits": {"memory": "1Gi","cpu": "500m"}}
@@ -88,7 +90,7 @@ outapi['mounts'] = []
 outapi['volumes'] = []
 #manager
 manager = {'image':'jdtotow/manager','ports': [{'port':55671,'name':'manager'}]}
-manager['env'] = {"MONGODB_HOST":mongodb_uri,"RABBITMQHOST":rabbitmq_hostname,"URLEXPORTER":"http://localhost:55671","COMPONENTNAME":"manager","NTHREADSCONSUMER":1}
+manager['env'] = {"MONGODB_HOST":mongodb_uri,"RABBITMQHOST":rabbitmq_hostname,"URLEXPORTER":"http://localhost:55671","COMPONENTNAME":"manager","NTHREADSCONSUMER":3}
 manager['mounts'] = [] #[{"name":"volume-manager","mountPath":"/config"}]
 manager['volumes'] = [] #[{'name':'volume-manager','persistentVolumeClaim':{'name': 'volume-manager-claim'}}]
 #manager['initContainers'] = [{"name": "manager-permission-fix","image": "busybox","command": ["/bin/chmod","-R","777","/data"],"volumeMounts": [{"name": "volume-manager","mountPath": "/data"}]}]
@@ -135,16 +137,16 @@ optimizer['env'] = {"PROMETHEUSCONFIPATH":"/config/prometheus.yml","PROMETHEUSAP
 optimizer['mounts'] = []
 optimizer['volumes'] = []
 
-#grafana 
+#grafana
 grafana = {'image': 'grafana/grafana','ports':[{'port':3000,'name':'grafana'}]}
 grafana['resources'] = {"requests": {"memory": "64Mi","cpu": "50m"},"limits": {"memory": "16Gi","cpu": "500m"}}
-grafana['env'] = {"GF_AUTH_ANONYMOUS_ENABLED":True}
+grafana['env'] = {}
 grafana['mounts'] = []
 grafana['volumes'] = []
 
 #slalite
-slalite = {'image': 'ct2cania/slalite','ports':[{'port': 8090,'name':'slalite'}]}
-slalite['env'] = {'RABBITMQ_HOSTNAME': rabbitmq_hostname,'RABBITMQ_PORT':rabbitmq_ports[0]['port'],'RABBITMQ_USER': rabbitmq_username,'RABBITMQ_PASS': rabbitmq_password,'SLA_CHECKPERIOD':20}
+slalite = {'image': 'atosbigdatastack/qos:1.5.3','ports':[{'port': 8090,'name':'slalite'}]}
+slalite['env'] = {'PUSHGATEWAY_URL':pushgateway_url,'RABBITMQ_HOSTNAME': rabbitmq_hostname,'RABBITMQ_PORT':rabbitmq_ports[0]['port'],'RABBITMQ_USER': rabbitmq_username,'RABBITMQ_PASS': rabbitmq_password,'SLA_CHECKPERIOD':20}
 slalite['mounts'] = []
 slalite['volumes'] = []
 #slalite entrypoint
@@ -152,7 +154,7 @@ slalite['volumes'] = []
 RABBITMQ_USER=richardm --env RABBITMQ_PASS=bigdatastack --env RABBITMQ_HOSTNAME=rabbitmq --env SLALITE_HOSTNAME=slalite --env SLALITE_PORT=8090
 """
 slaliteentrypoint = {'image': 'ct2cania/slalite-entrypoint','ports':[{'port': 8090,'name':'slalite'}]}
-slaliteentrypoint['env'] = {'RABBITMQ_HOSTNAME': rabbitmq_hostname,'SLALITE_HOSTNAME':slalite_hostname,'SLALITE_PORT':8090,'RABBITMQ_PORT':rabbitmq_ports[0]['port'],'RABBITMQ_USER': rabbitmq_username,'RABBITMQ_PASS': rabbitmq_password,'SLA_CHECKPERIOD':20}
+slaliteentrypoint['env'] = {'RABBITMQ_HOSTNAME': rabbitmq_hostname,'SLALITE_PLAY2AGRE':'$.fields.applicationID,$.fields.playbook.objects[0].objectID','SLALITE_HOSTNAME':slalite_hostname,'SLALITE_PORT':8090,'RABBITMQ_PORT':rabbitmq_ports[0]['port'],'RABBITMQ_USER': rabbitmq_username,'RABBITMQ_PASS': rabbitmq_password,'SLA_CHECKPERIOD':20}
 slaliteentrypoint['mounts'] = []
 slaliteentrypoint['volumes'] = []
 #pdp
@@ -164,7 +166,7 @@ pdp['volumes'] = [{'name':'volume-pdp','persistentVolumeClaim':{'name': 'volume-
 #pdp['initContainers'] = [{"name": "pdp-permission-fix","image": "busybox","command": ["/bin/chmod","-R","777","/data"],"volumeMounts": [{"name": "volume-pdp","mountPath": "/data"}]}]
 
 #pushgateway
-pushgateway = {'image':'prom/pushgateway','ports':[{'port': 9100,'name':'push'}]}
+pushgateway = {'image':'prom/pushgateway','ports':[{'port': 9091,'name':'push'}]}
 pushgateway['resources'] = {"requests": {"memory": "24Mi","cpu": "50m"},"limits": {"memory": "128Mi","cpu": "500m"}}
 pushgateway['mounts'] = []
 pushgateway['volumes'] = []
@@ -203,11 +205,9 @@ def loadPlanner():
     except:
         raise FileExistsError("Planner file not found")
     content = _file.read()
-    _json = None 
+    _json = None
     try:
         _json = json.loads(content)
     except:
         raise ValueError("JSON content is not correct")
-    return _json 
-
-
+    return _json

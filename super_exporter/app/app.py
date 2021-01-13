@@ -58,21 +58,32 @@ class Manager():
         except Exception as e:
             print("Cannot decode json")
             print(e)
-        if _json == None:
-            return None
-        if type(_json) == type(""):
-            _json = _json[1:-1]
         metrics = None 
         labels = None 
-        print(_json)
+        if 'message' in _json:
+            _json = _json['message']
+        if type(_json) != type({}):
+            try:
+                _json = json.loads(_json)
+            except:
+                print("JSON content is not correct")
+                print(_json)
+                return None 
+        if not 'metrics' in _json or 'labels' in _json:
+            print(_json)
+            print(type(_json))
+            print("Metrics and labels keys not found in the object")
+            return None 
         try:
             metrics = _json['metrics']
             labels =  _json['labels']
         except Exception as e:
             print(e)
             print("Error getting content")
-        if metrics == None or labels == None:
-            return None
+
+        print("The following metrics will be exported")
+        print(_json)
+        print("--------------------------------------")
         global super_metric_dict, super_labels_dict, super_list
         super_list.append({'metrics': metrics,'labels':labels})
         for k,v in metrics.items():
@@ -145,6 +156,9 @@ def getMetrics():
     #registry = Collector(super_labels_dict,super_metric_dict)
     registry = CollectorV2(super_list)
     collected_metric = generate_latest(registry)
+    print("Metrics exported")
+    print(super_metric_dict)
+    print("----------------")
     super_labels_dict.clear()
     super_metric_dict.clear()
     del super_list[:]

@@ -17,5 +17,11 @@ spec:
         name: tester
         imagePullPolicy: Always
         env:
-        - name: RECOMMENDER_HOSTNAME
-          value: "grssr-srv-recommender-0.realization.svc.cluster.local"
+        - name: FEEDBACKS_HOSTNAME
+          value: "proxy.istioapp.svc:8083"
+        - name: NTHREADS
+          value: "1"
+        - name: NREQUEST
+          value: "2"
+        - name: SLEEP_TIME
+          value: "5"

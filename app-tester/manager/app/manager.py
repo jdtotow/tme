@@ -21,22 +21,13 @@ db_username = os.environ.get("MONGODB_USERNAME","uprc")
 db_password = os.environ.get("MONGODB_PASSWORD","bigdatastack")
 mongdb_host = os.environ.get("MONGODB_HOST","mongodb:27017")
 gossip_sync_interval = float(os.environ.get("GOSSIPSYNCINTERVAL","60"))
-n_threads_consumer = int(os.environ.get("NTHREADSCONSUMER","5"))
+n_threads_consumer = int(os.environ.get("NTHREADSCONSUMER","3"))
 manager_all_metrics_queue = os.environ.get("MANAGERALLMETRICSQUEUE","allmetrics")
 moving_window_forward = int(os.environ.get("MOVINGWINDOWFARWORD","1"))
 url_exporter_qos = os.environ.get("URLEXPORTERQOS","http://localhost:55683")
 prom_auto_conf_consumer = os.environ.get("MLCONSUMERQUEUENAME","prom_auto_conf")
 enable_prom_auto_conf = os.environ.get("ENABLEPROMAUTOCONF","enabled")
-exchange_broadcast_ingestor = os.environ.get("SYNCEXCHANGENAME","prometheusbeat_sync")
-
-"""
-mongo_client = None 
-try:
-    mongo_client = MongoClient(host=[mongdb_host],username=db_username,password=db_password)
-except:
-    time.sleep(10)
-    mongo_client = MongoClient(host=[mongdb_host],username=db_username,password=db_password)
-"""
+#exchange_broadcast_ingestor = os.environ.get("SYNCEXCHANGENAME","prometheusbeat_sync")
 
 
 def responder(request,status,body):
@@ -45,29 +36,6 @@ def responder(request,status,body):
     response['status'] = status
     response['data'] = body
     return json.dumps(response)
-
-"""
-def getDocument(db,filter):
-    return db["tracker"].find_one(filter)
-
-def saveMetric(query):
-    db = None
-    global mongo_client 
-    try:
-        db = mongo_client[dbname]
-    except:
-        mongo_client = MongoClient(host=[mongdb_host],username=db_username,password=db_password)
-        db = mongo_client[dbname]
-    document = getDocument(db,{'index': query['index']})
-    if document == None:
-        db["tracker"].insert_one(query)
-    else:
-        db["tracker"].find_one_and_update({'index': query['index']},{'$inc':{'n_access': 1}})
-        db["tracker"].find_one_and_update({'index': query['index']},{'$set':{'last': query['last']}})
-def saveMetrics(_list_data_to_save):
-    for query in _list_data_to_save:
-        saveMetric(query)
-"""
 
 class RabbitMQ():
     def __init__(self, manager,request,username,password,host,port):
@@ -254,8 +222,18 @@ class RequestHandler():
     def setManager(self,manager):
         self.manager = manager
         self.config.setManager(self.manager)
-        self.multi_consumer = MultiThreadConsumerManager(n_threads_consumer,config.rabbitmq['username'],config.rabbitmq['password'],config.rabbitmq['host'],int(config.rabbitmq['port']),20,"",self,"manager",manager_all_metrics_queue)
+        self.multi_consumer = MultiThreadConsumerManager(n_threads_consumer,config.rabbitmq['username'],config.rabbitmq['password'],config.rabbitmq['host'],int(config.rabbitmq['port']),20,"",self.setData,"manager")
         self.multi_consumer.start()
+        thread = Thread(target=self.connectionRoutineCheck,args=())
+        thread.start()
+    def connectionRoutineCheck(self):
+        while True:
+            if not self.multi_consumer.threadsStatus():
+                self.multi_consumer.stop()
+                print("Restarting threads")
+                time.sleep(5)
+                self.multi_consumer.start()
+            time.sleep(5)
     def setQueueManager(self,rabbit):
         self.queueing_manager = rabbit
         self.qos_subscription_manager = QoSSubscriptionManager(self.queueing_manager)
@@ -263,9 +241,9 @@ class RequestHandler():
         self.publisher.setConfig(self.config)
         self.config.setPublisher(self.publisher)
         self.config.setRequestHandler(self)
-        self.discovering_service = PeerDiscovering(self.queueing_manager,self.config)
-        thread = Thread(target=self.discovering_service.start)
-        thread.start()
+        #self.discovering_service = PeerDiscovering(self.queueing_manager,self.config)
+        #thread = Thread(target=self.discovering_service.start)
+        #thread.start()
     def setPreviousConfig(self,previous_config):
         self.previous_config = previous_config
         for name, consumer_json in self.previous_config.iteritems():
@@ -312,9 +290,8 @@ class RequestHandler():
                 data = json.loads(self.body)
             except Exception as e:
                 print("Cannot decode json content")
-                print(type(self.body))
-                print(self.body)
-                print(e)
+                print("type",type(self.body))
+                print("content",self.body)
                 return None
         ###Send report#####
         interval = time.time() - self.start_time
@@ -803,7 +780,9 @@ class QoSSubscriptionManager():
             print("QoS Subscrition for "+ metric['name']+" of the app "+metric['application']+", created at "+ str(time.time())+", key : "+ subs.getKey()+", interval : "+ str(metric['interval'])) 
             #senf to the ingestor
             _json = {'request': 'add_subs','data':{'metric': metric['name'],'application':metric['application'],'type':'metric-app','queue':queue }}
-            self.queueing_manager.addTask({'queue': '','exchange': exchange_broadcast_ingestor,'message': _json})
+            print(_json)
+            #self.queueing_manager.addTask({'queue': 'ingestor','exchange': exchange_broadcast_ingestor,'message': _json})
+            self.queueing_manager.addTask({'queue': queue_ingestor,'exchange': exchange_ingestor,'message': json.dumps(_json)})
             
         return True
 

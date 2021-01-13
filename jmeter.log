@@ -1,0 +1,202 @@
+2020/11/23 14:08:58 INFO  - jmeter.util.JMeterUtils: Setting Locale to en_US 
+2020/11/23 14:08:58 INFO  - jmeter.JMeter: Loading user properties from: /usr/share/jmeter/bin/user.properties 
+2020/11/23 14:08:58 INFO  - jmeter.JMeter: Loading system properties from: /usr/share/jmeter/bin/system.properties 
+2020/11/23 14:08:58 INFO  - jmeter.JMeter: Copyright (c) 1998-2015 The Apache Software Foundation 
+2020/11/23 14:08:58 INFO  - jmeter.JMeter: Version 2.13.20170723 
+2020/11/23 14:08:58 INFO  - jmeter.JMeter: java.version=11.0.9.1 
+2020/11/23 14:08:58 INFO  - jmeter.JMeter: java.vm.name=OpenJDK 64-Bit Server VM 
+2020/11/23 14:08:58 INFO  - jmeter.JMeter: os.name=Linux 
+2020/11/23 14:08:58 INFO  - jmeter.JMeter: os.arch=amd64 
+2020/11/23 14:08:58 INFO  - jmeter.JMeter: os.version=5.4.0-53-generic 
+2020/11/23 14:08:58 INFO  - jmeter.JMeter: file.encoding=UTF-8 
+2020/11/23 14:08:58 INFO  - jmeter.JMeter: Default Locale=English (United States) 
+2020/11/23 14:08:58 INFO  - jmeter.JMeter: JMeter  Locale=English (United States) 
+2020/11/23 14:08:58 INFO  - jmeter.JMeter: JMeterHome=/usr/share/jmeter 
+2020/11/23 14:08:58 INFO  - jmeter.JMeter: user.dir  =/home/jean-didier/Projects/bigdatastack/TME 
+2020/11/23 14:08:58 INFO  - jmeter.JMeter: PWD       =/home/jean-didier/Projects/bigdatastack/TME 
+2020/11/23 14:08:58 INFO  - jmeter.JMeter: IP: 127.0.1.1 Name: jcloud FullName: jcloud 
+2020/11/23 14:08:58 INFO  - jmeter.gui.action.LookAndFeelCommand: Using look and feel: javax.swing.plaf.metal.MetalLookAndFeel [Metal, CrossPlatform] 
+2020/11/23 14:08:58 INFO  - jmeter.JMeter: Loaded icon properties from org/apache/jmeter/images/icon.properties 
+2020/11/23 14:08:59 INFO  - jmeter.engine.util.CompoundVariable: Note: Function class names must contain the string: '.functions.' 
+2020/11/23 14:08:59 INFO  - jmeter.engine.util.CompoundVariable: Note: Function class names must not contain the string: '.gui.' 
+2020/11/23 14:09:00 INFO  - jmeter.util.BSFTestElement: Registering JMeter version of JavaScript engine as work-round for BSF-22 
+2020/11/23 14:09:01 INFO  - jmeter.protocol.http.sampler.HTTPSamplerBase: Cannot find .className property for htmlParser, using default 
+2020/11/23 14:09:01 INFO  - jmeter.protocol.http.sampler.HTTPSamplerBase: Parser for text/html is  
+2020/11/23 14:09:01 INFO  - jmeter.protocol.http.sampler.HTTPSamplerBase: Parser for application/xhtml+xml is  
+2020/11/23 14:09:01 INFO  - jmeter.protocol.http.sampler.HTTPSamplerBase: Parser for application/xml is  
+2020/11/23 14:09:01 INFO  - jmeter.protocol.http.sampler.HTTPSamplerBase: Parser for text/xml is  
+2020/11/23 14:09:01 INFO  - jmeter.protocol.http.sampler.HTTPSamplerBase: Parser for text/vnd.wap.wml is org.apache.jmeter.protocol.http.parser.RegexpHTMLParser 
+2020/11/23 14:09:01 INFO  - jmeter.gui.util.MenuFactory: Skipping org.apache.jmeter.protocol.http.modifier.gui.ParamModifierGui 
+2020/11/23 14:09:01 INFO  - jorphan.exec.KeyToolUtils: keytool found at 'keytool' 
+2020/11/23 14:09:01 INFO  - jmeter.protocol.http.proxy.ProxyControl: HTTP(S) Test Script Recorder SSL Proxy will use keys that support embedded 3rd party resources in file /usr/share/jmeter/bin/proxyserver.jks 
+2020/11/23 14:09:01 INFO  - jmeter.samplers.SampleResult: Note: Sample TimeStamps are START times 
+2020/11/23 14:09:01 INFO  - jmeter.samplers.SampleResult: sampleresult.default.encoding is set to ISO-8859-1 
+2020/11/23 14:09:01 INFO  - jmeter.samplers.SampleResult: sampleresult.useNanoTime=true 
+2020/11/23 14:09:01 INFO  - jmeter.samplers.SampleResult: sampleresult.nanoThreadSleep=5000 
+2020/11/23 14:09:24 INFO  - jmeter.services.FileServer: Default base='/home/jean-didier/Projects/bigdatastack/TME' 
+2020/11/23 14:09:24 INFO  - jmeter.gui.action.Load: Loading file: /home/jean-didier/Downloads/ATOSWL_POST_8_switch_withUUID_and_timestamp.jmx 
+2020/11/23 14:09:24 INFO  - jmeter.services.FileServer: Set new base='/home/jean-didier/Downloads' 
+2020/11/23 14:09:24 INFO  - jmeter.save.SaveService: Testplan (JMX) version: 2.2. Testlog (JTL) version: 2.2 
+2020/11/23 14:09:24 INFO  - jmeter.save.SaveService: Using SaveService properties version 2.8 
+2020/11/23 14:09:24 INFO  - jmeter.save.SaveService: Using SaveService properties file version 1656252 
+2020/11/23 14:09:24 INFO  - jmeter.save.SaveService: Using SaveService properties file encoding UTF-8 
+2020/11/23 14:09:24 INFO  - jmeter.save.SaveService: All converter versions present and correct 
+2020/11/23 14:09:24 INFO  - jmeter.save.SaveService: Loading file: /home/jean-didier/Downloads/ATOSWL_POST_8_switch_withUUID_and_timestamp.jmx 
+2020/11/23 14:09:25 INFO  - jmeter.services.FileServer: Set new base='/home/jean-didier/Downloads' 
+2020/11/23 14:09:27 INFO  - jmeter.engine.StandardJMeterEngine: Listeners will be started after enabling running version 
+2020/11/23 14:09:27 INFO  - jmeter.engine.StandardJMeterEngine: To revert to the earlier behaviour, define jmeterengine.startlistenerslater=false 
+2020/11/23 14:09:27 INFO  - jmeter.engine.StandardJMeterEngine: Running the test! 
+2020/11/23 14:09:27 INFO  - jmeter.samplers.SampleEvent: List of sample_variables: [] 
+2020/11/23 14:09:27 INFO  - jmeter.samplers.SampleEvent: List of sample_variables: [] 
+2020/11/23 14:09:27 INFO  - jmeter.gui.util.JMeterMenuBar: setRunning(true,*local*) 
+2020/11/23 14:09:27 INFO  - jmeter.engine.StandardJMeterEngine: Starting ThreadGroup: 1 : Thread Group  
+2020/11/23 14:09:27 INFO  - jmeter.engine.StandardJMeterEngine: Starting 1 threads for group Thread Group . 
+2020/11/23 14:09:27 INFO  - jmeter.engine.StandardJMeterEngine: Thread will continue on error 
+2020/11/23 14:09:27 INFO  - jmeter.threads.ThreadGroup: Starting thread group number 1 threads 1 ramp-up 0 perThread 0.0 delayedStart=true 
+2020/11/23 14:09:27 INFO  - jmeter.threads.ThreadGroup: Started thread group number 1 
+2020/11/23 14:09:27 INFO  - jmeter.engine.StandardJMeterEngine: All thread groups have been started 
+2020/11/23 14:09:27 INFO  - jmeter.threads.JMeterThread: jmeterthread.startearlier=true (see jmeter.properties) 
+2020/11/23 14:09:27 INFO  - jmeter.threads.JMeterThread: Running PostProcessors in forward order 
+2020/11/23 14:09:27 INFO  - jmeter.threads.JMeterThread: Thread started: Thread Group  1-1 
+2020/11/23 14:09:27 INFO  - jmeter.protocol.http.sampler.HTTPHCAbstractImpl: Local host = jcloud 
+2020/11/23 14:09:27 INFO  - jmeter.protocol.http.sampler.HTTPHC4Impl: HTTP request retry count = 0 
+2020/11/23 14:09:27 INFO  - jmeter.protocol.http.sampler.HTTPHC4Impl: Setting up HTTPS TrustAll scheme 
+2020/11/23 14:09:27 INFO  - jmeter.util.JsseSSLManager: Using default SSL protocol: TLS 
+2020/11/23 14:09:27 INFO  - jmeter.util.JsseSSLManager: SSL session context: per-thread 
+2020/11/23 14:09:30 INFO  - jmeter.reporters.Summariser: Generate Summary Results +      2 in     3s =    0.8/s Avg:  1142 Min:   325 Max:  1960 Err:     0 (0.00%) Active: 1 Started: 1 Finished: 0 
+2020/11/23 14:09:30 INFO  - jmeter.threads.JMeterThread: Thread is done: Thread Group  1-1 
+2020/11/23 14:09:30 INFO  - jmeter.threads.JMeterThread: Thread finished: Thread Group  1-1 
+2020/11/23 14:09:30 INFO  - jmeter.engine.StandardJMeterEngine: Notifying test listeners of end of test 
+2020/11/23 14:09:30 INFO  - jmeter.reporters.Summariser: Generate Summary Results +      3 in     1s =    3.4/s Avg:   280 Min:   202 Max:   435 Err:     0 (0.00%) Active: 0 Started: 1 Finished: 1 
+2020/11/23 14:09:30 INFO  - jmeter.reporters.Summariser: Generate Summary Results =      5 in     4s =    1.4/s Avg:   625 Min:   202 Max:  1960 Err:     0 (0.00%) 
+2020/11/23 14:09:30 INFO  - jmeter.gui.util.JMeterMenuBar: setRunning(false,*local*) 
+2020/11/23 14:11:50 INFO  - jmeter.gui.action.Load: Loading file: /home/jean-didier/Downloads/FeedbackCollector.jmx 
+2020/11/23 14:11:50 INFO  - jmeter.services.FileServer: Set new base='/home/jean-didier/Downloads' 
+2020/11/23 14:11:50 INFO  - jmeter.save.SaveService: Loading file: /home/jean-didier/Downloads/FeedbackCollector.jmx 
+2020/11/23 14:11:50 INFO  - jmeter.services.FileServer: Set new base='/home/jean-didier/Downloads' 
+2020/11/23 14:12:01 INFO  - jmeter.engine.StandardJMeterEngine: Running the test! 
+2020/11/23 14:12:01 INFO  - jmeter.samplers.SampleEvent: List of sample_variables: [] 
+2020/11/23 14:12:01 INFO  - jmeter.gui.util.JMeterMenuBar: setRunning(true,*local*) 
+2020/11/23 14:12:01 INFO  - jmeter.engine.StandardJMeterEngine: Starting ThreadGroup: 1 : Thread Group  
+2020/11/23 14:12:01 INFO  - jmeter.engine.StandardJMeterEngine: Starting 2 threads for group Thread Group . 
+2020/11/23 14:12:01 INFO  - jmeter.engine.StandardJMeterEngine: Thread will continue on error 
+2020/11/23 14:12:01 INFO  - jmeter.threads.ThreadGroup: Starting thread group number 1 threads 2 ramp-up 30 perThread 15000.0 delayedStart=true 
+2020/11/23 14:12:01 INFO  - jmeter.threads.ThreadGroup: Started thread group number 1 
+2020/11/23 14:12:01 INFO  - jmeter.engine.StandardJMeterEngine: All thread groups have been started 
+2020/11/23 14:12:01 INFO  - jmeter.threads.JMeterThread: Thread started: Thread Group  1-1 
+2020/11/23 14:12:01 INFO  - jmeter.reporters.Summariser: Generate Summary Results +      1 in     1s =    1.7/s Avg:   512 Min:   512 Max:   512 Err:     0 (0.00%) Active: 1 Started: 1 Finished: 0 
+2020/11/23 14:12:16 INFO  - jmeter.threads.JMeterThread: Thread started: Thread Group  1-2 
+2020/11/23 14:12:23 INFO  - jmeter.threads.JMeterThread: Thread is done: Thread Group  1-1 
+2020/11/23 14:12:23 INFO  - jmeter.threads.JMeterThread: Thread finished: Thread Group  1-1 
+2020/11/23 14:12:30 INFO  - jmeter.reporters.Summariser: Generate Summary Results +    157 in  28.3s =    5.5/s Avg:   218 Min:   198 Max:   878 Err:     0 (0.00%) Active: 1 Started: 2 Finished: 1 
+2020/11/23 14:12:30 INFO  - jmeter.reporters.Summariser: Generate Summary Results =    158 in    29s =    5.5/s Avg:   220 Min:   198 Max:   878 Err:     0 (0.00%) 
+2020/11/23 14:12:39 INFO  - jmeter.threads.JMeterThread: Thread is done: Thread Group  1-2 
+2020/11/23 14:12:39 INFO  - jmeter.threads.JMeterThread: Thread finished: Thread Group  1-2 
+2020/11/23 14:12:39 INFO  - jmeter.engine.StandardJMeterEngine: Notifying test listeners of end of test 
+2020/11/23 14:12:39 INFO  - jmeter.reporters.Summariser: Generate Summary Results +     42 in    10s =    4.4/s Avg:   220 Min:   200 Max:   328 Err:     0 (0.00%) Active: 0 Started: 2 Finished: 2 
+2020/11/23 14:12:39 INFO  - jmeter.reporters.Summariser: Generate Summary Results =    200 in  38.5s =    5.2/s Avg:   220 Min:   198 Max:   878 Err:     0 (0.00%) 
+2020/11/23 14:12:39 INFO  - jmeter.gui.util.JMeterMenuBar: setRunning(false,*local*) 
+2020/11/23 14:16:30 INFO  - jmeter.engine.StandardJMeterEngine: Running the test! 
+2020/11/23 14:16:30 INFO  - jmeter.samplers.SampleEvent: List of sample_variables: [] 
+2020/11/23 14:16:30 INFO  - jmeter.gui.util.JMeterMenuBar: setRunning(true,*local*) 
+2020/11/23 14:16:30 INFO  - jmeter.engine.StandardJMeterEngine: Starting ThreadGroup: 1 : Thread Group  
+2020/11/23 14:16:30 INFO  - jmeter.engine.StandardJMeterEngine: Starting 2 threads for group Thread Group . 
+2020/11/23 14:16:30 INFO  - jmeter.engine.StandardJMeterEngine: Thread will continue on error 
+2020/11/23 14:16:30 INFO  - jmeter.threads.ThreadGroup: Starting thread group number 1 threads 2 ramp-up 30 perThread 15000.0 delayedStart=true 
+2020/11/23 14:16:30 INFO  - jmeter.threads.ThreadGroup: Started thread group number 1 
+2020/11/23 14:16:30 INFO  - jmeter.engine.StandardJMeterEngine: All thread groups have been started 
+2020/11/23 14:16:30 INFO  - jmeter.threads.JMeterThread: Thread started: Thread Group  1-1 
+2020/11/23 14:16:31 INFO  - jmeter.reporters.Summariser: Generate Summary Results +      1 in   0.5s =    2.1/s Avg:   421 Min:   421 Max:   421 Err:     0 (0.00%) Active: 1 Started: 1 Finished: 0 
+2020/11/23 14:16:45 INFO  - jmeter.threads.JMeterThread: Thread started: Thread Group  1-2 
+2020/11/23 14:16:54 INFO  - jmeter.threads.JMeterThread: Thread is done: Thread Group  1-1 
+2020/11/23 14:16:54 INFO  - jmeter.threads.JMeterThread: Thread finished: Thread Group  1-1 
+2020/11/23 14:17:00 INFO  - jmeter.reporters.Summariser: Generate Summary Results +    155 in    29s =    5.3/s Avg:   239 Min:   207 Max:   982 Err:     0 (0.00%) Active: 1 Started: 2 Finished: 1 
+2020/11/23 14:17:00 INFO  - jmeter.reporters.Summariser: Generate Summary Results =    156 in    30s =    5.3/s Avg:   240 Min:   207 Max:   982 Err:     0 (0.00%) 
+2020/11/23 14:17:11 INFO  - jmeter.threads.JMeterThread: Thread is done: Thread Group  1-2 
+2020/11/23 14:17:11 INFO  - jmeter.threads.JMeterThread: Thread finished: Thread Group  1-2 
+2020/11/23 14:17:11 INFO  - jmeter.engine.StandardJMeterEngine: Notifying test listeners of end of test 
+2020/11/23 14:17:11 INFO  - jmeter.reporters.Summariser: Generate Summary Results +     44 in  11.1s =    4.0/s Avg:   243 Min:   207 Max:   304 Err:     0 (0.00%) Active: 0 Started: 2 Finished: 2 
+2020/11/23 14:17:11 INFO  - jmeter.reporters.Summariser: Generate Summary Results =    200 in    41s =    4.9/s Avg:   241 Min:   207 Max:   982 Err:     0 (0.00%) 
+2020/11/23 14:17:11 INFO  - jmeter.gui.util.JMeterMenuBar: setRunning(false,*local*) 
+2020/11/23 14:17:31 INFO  - jmeter.engine.StandardJMeterEngine: Running the test! 
+2020/11/23 14:17:31 INFO  - jmeter.samplers.SampleEvent: List of sample_variables: [] 
+2020/11/23 14:17:31 INFO  - jmeter.gui.util.JMeterMenuBar: setRunning(true,*local*) 
+2020/11/23 14:17:31 INFO  - jmeter.engine.StandardJMeterEngine: Starting ThreadGroup: 1 : Thread Group  
+2020/11/23 14:17:31 INFO  - jmeter.engine.StandardJMeterEngine: Starting 2 threads for group Thread Group . 
+2020/11/23 14:17:31 INFO  - jmeter.engine.StandardJMeterEngine: Thread will continue on error 
+2020/11/23 14:17:31 INFO  - jmeter.threads.ThreadGroup: Starting thread group number 1 threads 2 ramp-up 30 perThread 15000.0 delayedStart=true 
+2020/11/23 14:17:31 INFO  - jmeter.threads.ThreadGroup: Started thread group number 1 
+2020/11/23 14:17:31 INFO  - jmeter.engine.StandardJMeterEngine: All thread groups have been started 
+2020/11/23 14:17:31 INFO  - jmeter.threads.JMeterThread: Thread started: Thread Group  1-1 
+2020/11/23 14:17:31 INFO  - jmeter.reporters.Summariser: Generate Summary Results +      1 in     1s =    1.4/s Avg:   686 Min:   686 Max:   686 Err:     0 (0.00%) Active: 1 Started: 1 Finished: 0 
+2020/11/23 14:17:46 INFO  - jmeter.threads.JMeterThread: Thread started: Thread Group  1-2 
+2020/11/23 14:17:59 INFO  - jmeter.threads.JMeterThread: Thread is done: Thread Group  1-1 
+2020/11/23 14:17:59 INFO  - jmeter.threads.JMeterThread: Thread finished: Thread Group  1-1 
+2020/11/23 14:18:00 INFO  - jmeter.reporters.Summariser: Generate Summary Results +    148 in  28.2s =    5.3/s Avg:   272 Min:   253 Max:   508 Err:     0 (0.00%) Active: 1 Started: 2 Finished: 1 
+2020/11/23 14:18:00 INFO  - jmeter.reporters.Summariser: Generate Summary Results =    149 in    29s =    5.2/s Avg:   275 Min:   253 Max:   686 Err:     0 (0.00%) 
+2020/11/23 14:18:14 INFO  - jmeter.threads.JMeterThread: Thread is done: Thread Group  1-2 
+2020/11/23 14:18:14 INFO  - jmeter.threads.JMeterThread: Thread finished: Thread Group  1-2 
+2020/11/23 14:18:14 INFO  - jmeter.engine.StandardJMeterEngine: Notifying test listeners of end of test 
+2020/11/23 14:18:14 INFO  - jmeter.reporters.Summariser: Generate Summary Results +     51 in  14.4s =    3.5/s Avg:   276 Min:   253 Max:   324 Err:     0 (0.00%) Active: 0 Started: 2 Finished: 2 
+2020/11/23 14:18:14 INFO  - jmeter.reporters.Summariser: Generate Summary Results =    200 in  43.3s =    4.6/s Avg:   275 Min:   253 Max:   686 Err:     0 (0.00%) 
+2020/11/23 14:18:14 INFO  - jmeter.gui.util.JMeterMenuBar: setRunning(false,*local*) 
+2020/11/23 14:19:08 INFO  - jmeter.engine.StandardJMeterEngine: Running the test! 
+2020/11/23 14:19:08 INFO  - jmeter.samplers.SampleEvent: List of sample_variables: [] 
+2020/11/23 14:19:08 INFO  - jmeter.gui.util.JMeterMenuBar: setRunning(true,*local*) 
+2020/11/23 14:19:08 INFO  - jmeter.engine.StandardJMeterEngine: Starting ThreadGroup: 1 : Thread Group  
+2020/11/23 14:19:08 INFO  - jmeter.engine.StandardJMeterEngine: Starting 2 threads for group Thread Group . 
+2020/11/23 14:19:08 INFO  - jmeter.engine.StandardJMeterEngine: Thread will continue on error 
+2020/11/23 14:19:08 INFO  - jmeter.threads.ThreadGroup: Starting thread group number 1 threads 2 ramp-up 30 perThread 15000.0 delayedStart=true 
+2020/11/23 14:19:08 INFO  - jmeter.threads.ThreadGroup: Started thread group number 1 
+2020/11/23 14:19:08 INFO  - jmeter.engine.StandardJMeterEngine: All thread groups have been started 
+2020/11/23 14:19:08 INFO  - jmeter.threads.JMeterThread: Thread started: Thread Group  1-1 
+2020/11/23 14:19:23 INFO  - jmeter.threads.JMeterThread: Thread started: Thread Group  1-2 
+2020/11/23 14:19:26 INFO  - jmeter.threads.JMeterThread: Thread is done: Thread Group  1-1 
+2020/11/23 14:19:26 INFO  - jmeter.threads.JMeterThread: Thread finished: Thread Group  1-1 
+2020/11/23 14:19:30 INFO  - jmeter.reporters.Summariser: Generate Summary Results +    140 in    22s =    6.5/s Avg:   165 Min:   137 Max:   393 Err:     0 (0.00%) Active: 1 Started: 2 Finished: 1 
+2020/11/23 14:19:41 INFO  - jmeter.threads.JMeterThread: Thread is done: Thread Group  1-2 
+2020/11/23 14:19:41 INFO  - jmeter.threads.JMeterThread: Thread finished: Thread Group  1-2 
+2020/11/23 14:19:41 INFO  - jmeter.engine.StandardJMeterEngine: Notifying test listeners of end of test 
+2020/11/23 14:19:41 INFO  - jmeter.reporters.Summariser: Generate Summary Results +     60 in    11s =    5.5/s Avg:   175 Min:   138 Max:   288 Err:     0 (0.00%) Active: 0 Started: 2 Finished: 2 
+2020/11/23 14:19:41 INFO  - jmeter.reporters.Summariser: Generate Summary Results =    200 in  32.5s =    6.2/s Avg:   168 Min:   137 Max:   393 Err:     0 (0.00%) 
+2020/11/23 14:19:41 INFO  - jmeter.gui.util.JMeterMenuBar: setRunning(false,*local*) 
+2020/11/23 14:23:43 INFO  - jmeter.engine.StandardJMeterEngine: Running the test! 
+2020/11/23 14:23:43 INFO  - jmeter.samplers.SampleEvent: List of sample_variables: [] 
+2020/11/23 14:23:43 INFO  - jmeter.gui.util.JMeterMenuBar: setRunning(true,*local*) 
+2020/11/23 14:23:43 INFO  - jmeter.engine.StandardJMeterEngine: Starting ThreadGroup: 1 : Thread Group  
+2020/11/23 14:23:43 INFO  - jmeter.engine.StandardJMeterEngine: Starting 2 threads for group Thread Group . 
+2020/11/23 14:23:43 INFO  - jmeter.engine.StandardJMeterEngine: Thread will continue on error 
+2020/11/23 14:23:43 INFO  - jmeter.threads.ThreadGroup: Starting thread group number 1 threads 2 ramp-up 30 perThread 15000.0 delayedStart=true 
+2020/11/23 14:23:43 INFO  - jmeter.threads.ThreadGroup: Started thread group number 1 
+2020/11/23 14:23:43 INFO  - jmeter.engine.StandardJMeterEngine: All thread groups have been started 
+2020/11/23 14:23:43 INFO  - jmeter.threads.JMeterThread: Thread started: Thread Group  1-1 
+2020/11/23 14:23:58 INFO  - jmeter.threads.JMeterThread: Thread started: Thread Group  1-2 
+2020/11/23 14:24:00 INFO  - jmeter.reporters.Summariser: Generate Summary Results +     32 in  16.1s =    2.0/s Avg:   517 Min:   253 Max:  1354 Err:     0 (0.00%) Active: 2 Started: 2 Finished: 0 
+2020/11/23 14:24:19 INFO  - jmeter.threads.JMeterThread: Thread is done: Thread Group  1-1 
+2020/11/23 14:24:19 INFO  - jmeter.threads.JMeterThread: Thread finished: Thread Group  1-1 
+2020/11/23 14:24:24 INFO  - jmeter.threads.JMeterThread: Thread is done: Thread Group  1-2 
+2020/11/23 14:24:24 INFO  - jmeter.threads.JMeterThread: Thread finished: Thread Group  1-2 
+2020/11/23 14:24:24 INFO  - jmeter.engine.StandardJMeterEngine: Notifying test listeners of end of test 
+2020/11/23 14:24:24 INFO  - jmeter.reporters.Summariser: Generate Summary Results +    168 in    25s =    6.8/s Avg:   260 Min:   206 Max:   845 Err:     0 (0.00%) Active: 0 Started: 2 Finished: 2 
+2020/11/23 14:24:24 INFO  - jmeter.reporters.Summariser: Generate Summary Results =    200 in    41s =    4.9/s Avg:   301 Min:   206 Max:  1354 Err:     0 (0.00%) 
+2020/11/23 14:24:24 INFO  - jmeter.gui.util.JMeterMenuBar: setRunning(false,*local*) 
+2020/11/23 14:26:11 INFO  - jmeter.engine.StandardJMeterEngine: Running the test! 
+2020/11/23 14:26:11 INFO  - jmeter.samplers.SampleEvent: List of sample_variables: [] 
+2020/11/23 14:26:11 INFO  - jmeter.gui.util.JMeterMenuBar: setRunning(true,*local*) 
+2020/11/23 14:26:11 INFO  - jmeter.engine.StandardJMeterEngine: Starting ThreadGroup: 1 : Thread Group  
+2020/11/23 14:26:11 INFO  - jmeter.engine.StandardJMeterEngine: Starting 2 threads for group Thread Group . 
+2020/11/23 14:26:11 INFO  - jmeter.engine.StandardJMeterEngine: Thread will continue on error 
+2020/11/23 14:26:11 INFO  - jmeter.threads.ThreadGroup: Starting thread group number 1 threads 2 ramp-up 30 perThread 15000.0 delayedStart=true 
+2020/11/23 14:26:11 INFO  - jmeter.threads.ThreadGroup: Started thread group number 1 
+2020/11/23 14:26:11 INFO  - jmeter.engine.StandardJMeterEngine: All thread groups have been started 
+2020/11/23 14:26:11 INFO  - jmeter.threads.JMeterThread: Thread started: Thread Group  1-1 
+2020/11/23 14:26:26 INFO  - jmeter.threads.JMeterThread: Thread started: Thread Group  1-2 
+2020/11/23 14:26:28 INFO  - jmeter.threads.JMeterThread: Thread is done: Thread Group  1-1 
+2020/11/23 14:26:28 INFO  - jmeter.threads.JMeterThread: Thread finished: Thread Group  1-1 
+2020/11/23 14:26:30 INFO  - jmeter.reporters.Summariser: Generate Summary Results +    116 in    19s =    6.2/s Avg:   175 Min:   137 Max:   643 Err:     0 (0.00%) Active: 1 Started: 2 Finished: 1 
+2020/11/23 14:26:48 INFO  - jmeter.threads.JMeterThread: Thread is done: Thread Group  1-2 
+2020/11/23 14:26:48 INFO  - jmeter.threads.JMeterThread: Thread finished: Thread Group  1-2 
+2020/11/23 14:26:48 INFO  - jmeter.engine.StandardJMeterEngine: Notifying test listeners of end of test 
+2020/11/23 14:26:48 INFO  - jmeter.reporters.Summariser: Generate Summary Results +     84 in    19s =    4.5/s Avg:   215 Min:   199 Max:   491 Err:     0 (0.00%) Active: 0 Started: 2 Finished: 2 
+2020/11/23 14:26:48 INFO  - jmeter.reporters.Summariser: Generate Summary Results =    200 in  37.3s =    5.4/s Avg:   192 Min:   137 Max:   643 Err:     0 (0.00%) 
+2020/11/23 14:26:48 INFO  - jmeter.gui.util.JMeterMenuBar: setRunning(false,*local*) 

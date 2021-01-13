@@ -1,6 +1,7 @@
-FROM python:3
+FROM python:3.7.0
 RUN apt-get install -y curl 
 RUN python -m pip install --upgrade pip
+RUN pip install requests 
 RUN mkdir /app
 RUN useradd tester
 RUN chown -R tester /app 
