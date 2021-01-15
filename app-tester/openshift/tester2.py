@@ -8,6 +8,7 @@ from mon import Collector
 
 max_thread_sender = int(os.environ.get("NTHREADS","10"))
 n_request = int(os.environ.get("NREQUEST","2"))
+
 base_url = os.environ.get("FEEDBACKS_HOSTNAME","grss-srv-feedbackcollector-0.realization.svc")
 feedback_url = base_url
 feedback_types = ['PRODUCT_VISUALIZED','PRODUCT_ADDED_TO_BASKET','PRODUCT_RECOMMENDATION_REMOVED','PRODUCT_REMOVED_FROM_BASKET']
@@ -19,11 +20,18 @@ response_time_mean = 0
 response_time_max = 0
 response_time_total = 0 
 
+appID = os.environ.get("appID","tester")
+objectID = os.environ.get("objectID","tester")
+instance = os.environ.get("instance","0")
+namespace = os.environ.get("namespace","realization")
+
+
 app = Flask(__name__)
 @app.route('/metrics',methods=['GET'])
 def metrics():
     metrics = {'response_time_mean': response_time_mean, 'response_time_max': response_time_max, 'response_time_total': response_time_total}
-    registry = Collector(["tester","response_time"],metrics=metrics)
+    labels = {'nthreads': str(max_thread_sender), "nrequest": str(n_request), "appID": appID, "objectID": objectID, "instance": instance, "namespace": namespace}
+    registry = Collector(labels=labels,metrics=metrics)
     collected_metric = generate_latest(registry)
     return Response(collected_metric,status=200,mimetype=CONTENT_TYPE_LATEST)
 

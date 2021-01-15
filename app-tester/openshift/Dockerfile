@@ -6,6 +6,7 @@ RUN mkdir /app
 RUN useradd tester
 RUN chown -R tester /app 
 COPY tester2.py /app/app.py 
+COPY mon.py /app/
 COPY start_qos-response.sh start_qos-cost.sh stop_qos-response.sh stop_qos-cost.sh /app/
 COPY agreement-response.json agreement-cost.json /app/
 RUN chmod +x /app/*.sh 

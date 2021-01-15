@@ -3,14 +3,13 @@ import random
 from prometheus_client import Metric
 
 class Collector(object):
-    def __init__(self,service, metrics=dict):
-        self._service = service
-        self._labels = {}
-        self._set_labels()
+    def __init__(self,labels, metrics=dict):
+        self._labels = labels
         self._metrics = metrics
 
     def _set_labels(self):
-        self._labels.update({'application': self._service[0],'replicas': self._service[1]})
+        #self._labels.update({'application': self._service[0],'replicas': self._service[1]})
+        pass 
 
     def _get_metrics(self):
         #time.sleep(random.uniform(0.1, 0.4))
